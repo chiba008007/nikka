@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'title' => 'AdminLTE 3',
+    'title' => 'csjtohoku',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -63,8 +63,8 @@ return [
     |
     */
 
-    'logo' => '<b>Admin</b>LTE',
-    'logo_img' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
+    'logo' => '日化東北',
+    'logo_img' => '/images/logo.png',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
@@ -304,6 +304,7 @@ return [
             'type' => 'navbar-search',
             'text' => 'search',
             'topnav_right' => true,
+
         ],
         [
             'type' => 'fullscreen-widget',
@@ -314,6 +315,7 @@ return [
         [
             'type' => 'sidebar-menu-search',
             'text' => 'search',
+            'can' => 'dashboard-page',
         ],
         [
             'text' => 'blog',
@@ -321,15 +323,35 @@ return [
             'can' => 'manage-blog',
         ],
         [
-            'text' => 'pages',
-            'url' => 'admin/pages',
-            'icon' => 'far fa-fw fa-file',
-            'label' => 4,
-            'label_color' => 'success',
+            'text' => '参加管理',
+            'route' => 'dashboard',
+            'topnav' => true,
         ],
-        ['header' => 'account_settings'],
         [
-            'text' => 'profile',
+            'text' => '講演管理',
+            'route' => 'dashboard',
+            'topnav' => true,
+        ],
+        [
+            'text' => '事前参加登録のご案内編集',
+            'route' => 'dashboard',
+            'topnav' => true,
+        ],
+        [
+            'text' => '発表申込のご案内編集',
+            'route' => 'dashboard',
+            'topnav' => true,
+        ],
+        // [
+        //     'text' => 'pages',
+        //     'url' => 'admin/pages',
+        //     'icon' => 'far fa-fw fa-file',
+        //     'label' => 4,
+        //     'label_color' => 'success',
+        // ],
+        ['header' => '参加管理'],
+        [
+            'text' => '参加者一覧',
             'url' => 'admin/settings',
             'icon' => 'fas fa-fw fa-user',
         ],
@@ -376,20 +398,26 @@ return [
                 ],
             ],
         ],
-        ['header' => 'labels'],
+        ['header' => '参加フォーム編集'],
         [
-            'text' => 'important',
+            'text' => '入力ページ',
             'icon_color' => 'red',
             'url' => '#',
         ],
         [
-            'text' => 'warning',
+            'text' => '確認ページ',
             'icon_color' => 'yellow',
             'url' => '#',
         ],
         [
-            'text' => 'information',
+            'text' => '完了ページ',
             'icon_color' => 'cyan',
+            'url' => '#',
+        ],
+        ['header' => '参加者編集用ページ'],
+        [
+            'text' => 'ログインページ',
+            'icon_color' => 'green',
             'url' => '#',
         ],
     ],
@@ -430,7 +458,7 @@ return [
 
     'plugins' => [
         'Datatables' => [
-            'active' => false,
+            'active' => true,
             'files' => [
                 [
                     'type' => 'js',
