@@ -297,7 +297,7 @@ return [
     | https://github.com/jeroennoten/Laravel-AdminLTE/wiki/Menu-Configuration
     |
     */
-
+    // AdminLTE menu は config ベースのため固定文言を使用
     'menu' => [
         // Navbar items:
         [
@@ -324,7 +324,7 @@ return [
         ],
         [
             'text' => '参加管理',
-            'route' => 'dashboard',
+            'route' => 'sanka.list.index',
             'topnav' => true,
         ],
         [
@@ -349,79 +349,79 @@ return [
         //     'label' => 4,
         //     'label_color' => 'success',
         // ],
-        ['header' => '参加管理'],
-        [
-            'text' => '参加者一覧',
-            'url' => 'admin/settings',
-            'icon' => 'fas fa-fw fa-user',
-        ],
-        [
-            'text' => 'change_password',
-            'url' => 'admin/settings',
-            'icon' => 'fas fa-fw fa-lock',
-        ],
-        [
-            'text' => 'multilevel',
-            'icon' => 'fas fa-fw fa-share',
-            'submenu' => [
-                [
-                    'text' => 'level_one',
-                    'url' => '#',
-                ],
-                [
-                    'text' => 'level_one',
-                    'url' => '#',
-                    'submenu' => [
-                        [
-                            'text' => 'level_two',
-                            'url' => '#',
-                        ],
-                        [
-                            'text' => 'level_two',
-                            'url' => '#',
-                            'submenu' => [
-                                [
-                                    'text' => 'level_three',
-                                    'url' => '#',
-                                ],
-                                [
-                                    'text' => 'level_three',
-                                    'url' => '#',
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-                [
-                    'text' => 'level_one',
-                    'url' => '#',
-                ],
-            ],
-        ],
-        ['header' => '参加フォーム編集'],
-        [
-            'text' => '入力ページ',
-            'icon_color' => 'red',
-            'url' => '#',
-        ],
-        [
-            'text' => '確認ページ',
-            'icon_color' => 'yellow',
-            'url' => '#',
-        ],
-        [
-            'text' => '完了ページ',
-            'icon_color' => 'cyan',
-            'url' => '#',
-        ],
-        ['header' => '参加者編集用ページ'],
-        [
-            'text' => 'ログインページ',
-            'icon_color' => 'green',
-            'url' => '#',
-        ],
+       // ['header' => '参加管理'],
+        // [
+        //     'text'  => '参加者一覧',
+        //     'route' => 'sanka.list.index',
+        //     'icon'  => 'fas fa-fw fa-user',
+        // ],
+        // [
+        //     'text' => 'change_password',
+        //     'url' => 'admin/settings',
+        //     'icon' => 'fas fa-fw fa-lock',
+        // ],
+        // [
+        //     'text' => 'multilevel',
+        //     'icon' => 'fas fa-fw fa-share',
+        //     'submenu' => [
+        //         [
+        //             'text' => 'level_one',
+        //             'url' => '#',
+        //         ],
+        //         [
+        //             'text' => 'level_one',
+        //             'url' => '#',
+        //             'submenu' => [
+        //                 [
+        //                     'text' => 'level_two',
+        //                     'url' => '#',
+        //                 ],
+        //                 [
+        //                     'text' => 'level_two',
+        //                     'url' => '#',
+        //                     'submenu' => [
+        //                         [
+        //                             'text' => 'level_three',
+        //                             'url' => '#',
+        //                         ],
+        //                         [
+        //                             'text' => 'level_three',
+        //                             'url' => '#',
+        //                         ],
+        //                     ],
+        //                 ],
+        //             ],
+        //         ],
+        //         [
+        //             'text' => 'level_one',
+        //             'url' => '#',
+        //         ],
+        //     ],
+        // ],
+        // ['header' => '参加フォーム編集'],
+        // [
+        //     'text' => '入力ページ',
+        //     'icon_color' => 'red',
+        //     'url' => '#',
+        // ],
+        // [
+        //     'text' => '確認ページ',
+        //     'icon_color' => 'yellow',
+        //     'url' => '#',
+        // ],
+        // [
+        //     'text' => '完了ページ',
+        //     'icon_color' => 'cyan',
+        //     'url' => '#',
+        // ],
+        // ['header' => '参加者編集用ページ'],
+        // [
+        //     'text' => 'ログインページ',
+        //     'icon_color' => 'green',
+        //     'url' => '#',
+        // ],
     ],
-
+   // 'menu' => [],
     /*
     |--------------------------------------------------------------------------
     | Menu Filters
@@ -489,6 +489,22 @@ return [
                     'type' => 'css',
                     'asset' => false,
                     'location' => '//cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.css',
+                ],
+            ],
+        ],
+        // リッチテキストエディタ
+        'Summernote' => [
+            'active' => false,
+            'files' => [
+                [
+                    'type' => 'css',
+                    'asset' => true,
+                    'location' => 'vendor/summernote/summernote-bs4.min.css',
+                ],
+                [
+                    'type' => 'js',
+                    'asset' => true,
+                    'location' => 'vendor/summernote/summernote-bs4.min.js',
                 ],
             ],
         ],
