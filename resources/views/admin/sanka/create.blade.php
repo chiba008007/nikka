@@ -7,7 +7,13 @@
 @stop
 
 @section('content')
-    create
+<x-participant-form
+    :action="route('sanka.list.store')"
+    :address-types="$addressTypes"
+    :expertise-types="$expertiseTypes"
+    :society-types="$societyTypes"
+    :join-types="$joinTypes"
+/>
 
 @stop
 @section('js')

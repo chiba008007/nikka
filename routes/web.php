@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\SankaFormController;
 use App\Http\Controllers\Admin\SankaListController;
 use App\Http\Controllers\Admin\SankaListCreateController;
+use App\Http\Controllers\Admin\ParticipantController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,7 +39,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/sanka/list/create', [SankaListController::class, 'create'])->name('sanka.list.create');
     Route::get('/sanka/list/create/form', [SankaListCreateController::class, 'editform'])->name('sanka.list.editform');
     Route::post('/sanka/list/create/form', [SankaListCreateController::class, 'update'])->name('sanka.list.editform.update');
-
+    // 参加者登録処理
+    Route::post('/sanka/list', [SankaListController::class, 'store'])
+        ->name('sanka.list.store');
 
 
     // 参加者登録フォーム一覧

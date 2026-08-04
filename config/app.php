@@ -5,6 +5,7 @@ use Illuminate\Support\ServiceProvider;
 
 return [
 
+    'sanka_reception_number_format' => 'R%04d-CSJ-TOHOKU26',
     /*
     |--------------------------------------------------------------------------
     | Application Name
