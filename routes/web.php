@@ -37,8 +37,18 @@ Route::middleware('auth')->group(function () {
     // 参加者一覧
     Route::get('/sanka/list', [SankaListController::class, 'list'])->name('sanka.list.index');
     Route::get('/sanka/list/create', [SankaListController::class, 'create'])->name('sanka.list.create');
+    // 参加者入力ページ
     Route::get('/sanka/list/create/form', [SankaListCreateController::class, 'editform'])->name('sanka.list.editform');
-    Route::post('/sanka/list/create/form', [SankaListCreateController::class, 'update'])->name('sanka.list.editform.update');
+    Route::put('/sanka/list/create/form', [SankaListCreateController::class, 'update'])->name('sanka.list.editform.update');
+    // 参加者確認ページ
+    Route::get('/sanka/list/confirm/form', [SankaListCreateController::class, 'confirm'])->name('sanka.list.confirm');
+    Route::post('/sanka/list/confirm/form', [SankaListCreateController::class, 'confirmUpdate'])->name('sanka.list.confirm.update');
+
+    // 参加費
+    Route::get('/sanka/list/fee/form', [SankaListCreateController::class, 'fee'])->name('sanka.list.fee');
+    Route::put('/sanka/list/fee/form', [SankaListCreateController::class, 'feeUpdate'])->name('sanka.fee.update');
+
+
     // 参加者登録処理
     Route::post('/sanka/list', [SankaListController::class, 'store'])
         ->name('sanka.list.store');

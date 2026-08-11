@@ -62,7 +62,7 @@ class AppServiceProvider extends ServiceProvider
                         ],
                         [
                             'text'  => '確認ページ',
-                            'route' => 'sanka.list.editform',
+                            'route' => 'sanka.list.confirm',
                             'icon'  => 'far fa-fw fa-circle',
                         ],
                         [
@@ -73,6 +73,11 @@ class AppServiceProvider extends ServiceProvider
                         [
                             'text'  => '参加者申込完了ページ',
                             'route' => 'sanka.list.editform',
+                            'icon'  => 'far fa-fw fa-circle',
+                        ],
+                        [
+                            'text'  => '参加登録費',
+                            'route' => 'sanka.list.fee',
                             'icon'  => 'far fa-fw fa-circle',
                         ],
                     ],
