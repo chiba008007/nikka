@@ -24,6 +24,7 @@ class SankaFormItem extends Model
         'error_message_en',
         'error_flag',
         'status',
+        'list_display',
         'checkbox_note_description',
         'checkbox_note_description_en',
     ];
@@ -32,6 +33,7 @@ class SankaFormItem extends Model
         'required' => 'boolean',
         'error_flag' => 'boolean',
         'status' => 'boolean',
+        'list_display' => 'boolean',
     ];
 
     public function options()

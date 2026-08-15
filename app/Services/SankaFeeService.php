@@ -184,6 +184,23 @@ class SankaFeeService
                     ]
                 );
             }
+
+            /*
+             * 合計
+             */
+            $totalFee = SankaFeeItem::where('name', 'total_fee')
+                ->firstOrFail();
+
+            $total = $request->input('total_fee', []);
+
+            // 合計表示を更新する
+            $totalFee->update([
+                'label_ja' => $total['label_ja'] ?? '',
+                'label_en' => $total['label_en'] ?? '',
+                'currency_label_ja' => $total['currency_label_ja'] ?? '円',
+                'currency_label_en' => $total['currency_label_en'] ?? 'yen',
+            ]);
+
         });
 
     }

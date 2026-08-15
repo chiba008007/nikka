@@ -16,6 +16,8 @@ class SankaParticipantStoreRequest extends FormRequest
 
     public function rules(): array
     {
+        return [];
+        /*
         return [
             // 氏名
             'name1' => ['required', 'string', 'max:100'],
@@ -51,5 +53,6 @@ class SankaParticipantStoreRequest extends FormRequest
             'mail_send' => ['nullable'],
             'selecter' => ['nullable', 'in:0,1'],
         ];
+        */
     }
 }

@@ -55,15 +55,46 @@
         color: #dc3545;
         font-size: 13px;
     }
+
+    /* ラジオボタンを横並びにする */
+    .radio-group {
+        display: flex;
+        gap: 12px;
+    }
+
+    /* 選択肢をカード風にする */
+    .radio-card {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 160px;
+        padding: 12px 16px;
+        margin: 0;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        cursor: pointer;
+        background: #fff;
+    }
+
+    /* 選択中を強調する */
+    .radio-card:has(input:checked) {
+        border-color: #007bff;
+        background: #f0f7ff;
+    }
+
+    /* ラジオボタンを少し大きくする */
+    .radio-card input[type="radio"] {
+        width: 18px;
+        height: 18px;
+    }
+
 </style>
 
 @props([
     'action',
     'method' => 'POST',
-    'addressTypes' => [],
-    'expertiseTypes' => [],
-    'societyTypes' => [],
-    'joinTypes' => [],
+    'formItems' => [],
+    'feeItems' => [],
 ])
 {{-- バリデーションエラーを表示する --}}
 @if ($errors->any())
@@ -75,7 +106,7 @@
 @endif
 
 {{-- 管理画面・公開画面で共通利用する参加者フォーム --}}
-<form action="{{ $action }}" method="POST">
+<form action="{{ $action }}" method="POST" >
     @csrf
 
     {{-- POST以外の場合はLaravelのHTTPメソッドを指定する --}}
@@ -84,451 +115,356 @@
     @endif
 
     <div class="card">
+        <div class="w-25 d-flex ml-auto justify-content-end pt-2 pr-2">
+            <button type="button" class="form-control w-25 btn-warning" id="show-jp" >JP</button>
+            <button type="button" class="form-control w-25 btn-warning ml-2" id="show-en">EN</button>
+        </div>
+
         <div class="card-body">
+            <div class="form-group jp ">
+                {!! $formItems[ 'description' ]->label_ja !!}
+            </div>
+            <div class="form-group en ">
+                {!! $formItems[ 'description' ]->label_en !!}
+            </div>
+            <hr />
+            @for ($i = 1; $i <= 50; $i++)
+                @php
+                    // title1 ～ title50 のキーを作成する
+                    $titleKey = 'title' . $i;
 
-            <div class="form-group">
-                <div class="section-title">
-                    参加者氏名
-                    <span class="required-label">必須</span>
-                </div>
+                    // title番号と同じ add_column を取得する
+                    $inputKey = 'add_column_' . $i;
+                    $input = $formItems[$inputKey] ?? null;
+
+                    // $required = ($input && $input->required) ? 'required' : '';
+                    $required = "";
+                @endphp
+
+                @if (isset($formItems[$titleKey]))
+                    {{-- 項目タイトル --}}
+                    <div class="section-title mt-3 jp">
+                        {{ $formItems[$titleKey]->label_ja }}
+
+                        @if ($formItems[$titleKey]->required_text ?? '')
+                            <span class="required-label">
+                                {{ $formItems[$titleKey]->required_text }}
+                            </span>
+                        @endif
+                    </div>
+                    <div class="section-title mt-3 en">
+                        {{ $formItems[$titleKey]->label_en }}
+
+                        @if ($formItems[$titleKey]->required_text ?? '')
+                            <span class="required-label">
+                                {{ $formItems[$titleKey]->required_text_en }}
+                            </span>
+                        @endif
+                    </div>
+
+                    @if ($input)
+                        <div class="form-row">
+                            @if ($input->group_key === 'postcode')
+                                <div class="col-md-12">
+                                    <input
+                                        style="width:300px;"
+                                        type="text"
+                                        name="{{ $input->name }}"
+                                        class="form-control js-postcode js-language-input"
+                                        value="{{ old($input->name) }}"
+                                        placeholder="{{ $input->placeholder_ja }}"
+                                        data-placeholder-ja="{{ $input->placeholder_ja }}"
+                                        data-placeholder-en="{{ $input->placeholder_en }}"
+                                        {{ $required }}
+                                    >
+                                </div>
+                            @elseif ($input->group_key === 'textarea')
+                                <div class="col-md-12">
+                                    <textarea
+                                        rows=5
+                                        name="{{ $input->name }}"
+                                        class="form-control js-postcode js-language-input"
+                                        placeholder="{{ $input->placeholder_ja }}"
+                                        data-placeholder-ja="{{ $input->placeholder_ja }}"
+                                        data-placeholder-en="{{ $input->placeholder_en }}"
+                                        {{ $required }}
+                                    >{{ old($input->name) }}</textarea>
+                                </div>
+                            @elseif ($input->group_key === 'checkbox')
+                                <div class="row">
+                                    @foreach ($input->options as $option)
+                                        <div class="col-4 ">
+                                            <label>
+                                                <input
+                                                    type="checkbox"
+                                                    name="{{ $input->name }}[values][]"
+                                                    id="{{ $input->name }}_{{ $option->value }}"
+                                                    value="{{ $option->value }}"
+                                                    {{ old($input->name) == $option->value ? 'checked' : '' }}
+                                                    {{ $required }}
+                                                >
+                                                <span class="jp">{{ $option->label_ja }}</span>
+                                                <span class="en">{{ $option->label_en }}</span>
+                                            </label>
+                                        </div>
+                                    @endforeach
+                                    <input
+                                    type='text'
+                                    name="{{ $input->name }}[other]"
+                                    class="form-control js-language-input"
+                                    placeholder="{{ $input->checkbox_note_description }}"
+                                    data-placeholder-ja="{{ $input->checkbox_note_description }}"
+                                    data-placeholder-en="{{ $input->checkbox_note_description_en }}"
+                                    />
+                                </div>
+
+                            @elseif ($input->group_key === 'radio')
+                                <div class="col-md-12">
+                                    <div class="radio-group">
+                                    @foreach ($input->options as $option)
+                                        <label
+                                            class="radio-card"
+                                            for="{{ $input->name }}_{{ $option->value }}"
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="{{ $input->name }}"
+                                                id="{{ $input->name }}_{{ $option->value }}"
+                                                value="{{ $option->value }}"
+                                                {{ old($input->name) == $option->value ? 'checked' : '' }}
+                                                {{ $required }}
+                                            >
+                                            <span class="jp">{{ $option->label_ja }}</span>
+                                            <span class="en">{{ $option->label_en }}</span>
+                                        </label>
+                                    @endforeach
+                                    </div>
+                                </div>
+                            @else
+
+                                {{-- 1つ目の入力欄 --}}
+                                <div class="{{ $input->column == 2 ? 'col-md-6' : 'col-md-12' }} d-flex">
+                                    <input
+                                        type="{{ $input->group_key === 'password' ? 'password':'text'}}"
+                                        name="{{ $input->name }}"
+                                        class="form-control {{$input->group_key}} js-language-input {{$input->group_key === 'password' ? 'w-25':'w-100'}} "
+                                        value="{{ old($input->name) }}"
+                                        placeholder="{{ $input->placeholder_ja }}"
+                                        data-placeholder-ja="{{ $input->placeholder_ja }}"
+                                        data-placeholder-en="{{ $input->placeholder_en }}"
+                                        {{ $required }}
+                                    >
+                                    @if($input->group_key === 'password' )
+                                    <h3 class="nav-icon fas fa-unlock ml-2 mt-2 lock" ></h3>
+                                    @endif
+                                </div>
+                                @if ($input->column == 2 && isset($formItems['add_column_' . ($i + 1)]))
+                                    @php
+                                        $secondInput = $formItems['add_column_' . ($i + 1)];
+                                    @endphp
+
+                                    <div class="col-md-6">
+                                        <input
+                                            type="text"
+                                            name="{{ $secondInput->name }}"
+                                            class="form-control js-language-input"
+                                            value="{{ old($secondInput->name) }}"
+                                            placeholder="{{ $secondInput->placeholder_ja }}"
+                                            data-placeholder-ja="{{ $secondInput->placeholder_ja }}"
+                                            data-placeholder-en="{{ $secondInput->placeholder_en }}"
+                                        >
+                                    </div>
+                                @endif
+                            @endif
+                        </div>
+                    @endif
+                @endif
+            @endfor
+
+            @if (isset($feeItems['registration_fee']))
                 <div class="form-row">
-                    <div class="col-md-6">
-                        <input
-                            type="text"
-                            name="name1"
-                            id="name1"
-                            class="form-control"
-                            value="{{ old('name1') }}"
-                            placeholder="姓を入力"
-                            required
-                        >
-                    </div>
+                    <div class="col-md-12">
 
-                    <div class="col-md-6">
-                        <input
-                            type="text"
-                            name="name2"
-                            id="name2"
-                            class="form-control"
-                            value="{{ old('name2') }}"
-                            placeholder="名を入力"
-                            required
-                        >
-                    </div>
-                </div>
-            </div>
+                        {{-- 見出し --}}
+                        <div class="section-title mt-3 jp">
+                            {{ $feeItems['registration_fee']->label_ja }}
 
-            <div class="form-group">
-                <div class="section-title">
-                    参加者氏名（カナ）
-                    <span class="required-label">必須</span>
-                </div>
-                <div class="form-row">
-                    <div class="col-md-6">
-                        <input
-                            type="text"
-                            name="kana1"
-                            id="kana1"
-                            class="form-control"
-                            value="{{ old('kana1') }}"
-                            placeholder="姓（カナ）を入力"
-                            required
-                        >
-                    </div>
-
-                    <div class="col-md-6">
-                        <input
-                            type="text"
-                            name="kana2"
-                            id="kana2"
-                            class="form-control"
-                            value="{{ old('kana2') }}"
-                            placeholder="名（カナ）を入力"
-                            required
-                        >
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="section-title">
-                    所属機関（大学・勤務先）
-                    <span class="required-label">必須</span>
-                </div>
-                <input
-                    type="text"
-                    name="daigaku"
-                    id="daigaku"
-                    class="form-control"
-                    value="{{ old('daigaku') }}"
-                    placeholder="所属機関を入力してください"
-                    required
-                >
-            </div>
-
-            <div class="form-group">
-                <div class="section-title">
-                    所属機関（学部・部署）
-                    <span class="required-label">必須</span>
-                </div>
-                <input
-                    type="text"
-                    name="gakubu"
-                    id="gakubu"
-                    class="form-control"
-                    value="{{ old('gakubu') }}"
-                    placeholder="学部・部署を入力してください"
-                    required
-                >
-            </div>
-
-            <div class="form-group">
-                <div class="section-title">
-                    所属機関（研究室）
-                </div>
-                <input
-                    type="text"
-                    name="kenkyu"
-                    id="kenkyu"
-                    class="form-control"
-                    value="{{ old('kenkyu') }}"
-                    placeholder="研究室を入力してください"
-                >
-            </div>
-
-            <div class="form-group">
-                <div class="section-title">
-                    連絡先
-                    <span class="required-label">必須</span>
-                </div>
-                <div>
-                    @foreach ($addressTypes as $value => $label)
-                      <label class="mr-4">
-                          <input
-                              type="radio"
-                              name="address_type"
-                              value="{{ $value }}"
-                              {{ old('address_type') == $value ? 'checked' : '' }}
-                              required
-                          >
-                          {{ $label }}
-                      </label>
-                    @endforeach
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="section-title">
-                    連絡先郵便番号
-                    <span class="required-label">必須</span>
-                </div>
-                <input
-                    type="text"
-                    name="post"
-                    id="post"
-                    class="form-control"
-                    value="{{ old('post') }}"
-                    placeholder="例：000-0000"
-                    required
-                >
-            </div>
-
-            <div class="form-group">
-                <div class="section-title">
-                    連絡先住所
-                    <span class="required-label">必須</span>
-                </div>
-                <input
-                    type="text"
-                    name="address"
-                    id="address"
-                    class="form-control"
-                    value="{{ old('address') }}"
-                    placeholder="住所を入力してください"
-                    required
-                >
-            </div>
-
-            <div class="form-group">
-                <div class="section-title">
-                    連絡先電話番号
-                    <span class="required-label">必須</span>
-                </div>
-                <input
-                    type="text"
-                    name="tel"
-                    id="tel"
-                    class="form-control"
-                    value="{{ old('tel') }}"
-                    placeholder="電話番号を入力してください"
-                    required
-                >
-            </div>
-
-            <div class="form-group">
-                <div class="section-title">
-                    連絡先FAX番号
-                </div>
-                <input
-                    type="text"
-                    name="fax"
-                    id="fax"
-                    class="form-control"
-                    value="{{ old('fax') }}"
-                    placeholder="FAX番号を入力してください"
-                >
-            </div>
-
-            <div class="form-group">
-                <div class="section-title">
-                    メールアドレス
-                    <span class="required-label">必須</span>
-                </div>
-                <input
-                    type="email"
-                    name="mail"
-                    id="mail"
-                    class="form-control"
-                    value="{{ old('mail') }}"
-                    placeholder="メールアドレスを入力してください"
-                    required
-                >
-            </div>
-
-            <div class="form-group">
-                <div class="section-title">
-                    メールアドレス（確認）
-                    <span class="required-label">必須</span>
-                </div>
-                <input
-                    type="email"
-                    name="mail2"
-                    id="mail2"
-                    class="form-control"
-                    value="{{ old('mail2') }}"
-                    placeholder="メールアドレスをもう一度入力してください"
-                    required
-                >
-            </div>
-
-            <div class="form-group">
-                <div class="section-title">
-                    パスワード
-                    <span class="required-label">必須</span>
-                </div>
-                <div class="input-group">
-                    <input
-                        type="password"
-                        name="password"
-                        id="password"
-                        class="form-control"
-                        placeholder="パスワードを入力してください"
-                        required
-                    >
-
-                    <div class="input-group-append">
-                        <button
-                            type="button"
-                            class="btn btn-outline-secondary"
-                            id="password-display"
-                        >
-                            表示
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-
-
-            <div class="form-group">
-                <div class="section-title">
-                    専門分野
-                    <span class="required-label">必須</span>
-                </div>
-                <div class="row">
-                    @foreach ($expertiseTypes as $key => $label)
-                     <div class="col-md-6">
-                        <label class="mr-4">
-                            <input
-                                type="checkbox"
-                                name="sankaformselect[{{ $key }}]"
-                                value="{{ $label }}"
-                                {{ old("sankaformselect.$key") ? 'checked' : '' }}
-                            >
-                            {{ $label }}
-                        </label>
-                     </div>
-                    @endforeach
-                </div>
-
-                <input
-                    type="text"
-                    name="sankaformselectother"
-                    class="form-control mt-2"
-                    value="{{ old('sankaformselectother') }}"
-                    placeholder="その他の分野名を入力してください"
-                >
-            </div>
-
-            <div class="form-group">
-                <div class="section-title">
-                    所属学協会
-                    <span class="required-label">必須</span>
-                </div>
-                <div class="row">
-                  {{-- 所属学協会を表示する --}}
-                  @foreach ($societyTypes as $key => $label)
-                    <div class="col-md-6">
-                      <label class="mr-4">
-                          <input
-                              type="checkbox"
-                              name="syozokuSankaformselect[{{ $key }}]"
-                              value="{{ $label }}"
-                              {{ old("syozokuSankaformselect.$key") ? 'checked' : '' }}
-                          >
-                          {{ $label }}
-                      </label>
-                    </div>
-                  @endforeach
-                </div>
-
-                <input
-                    type="text"
-                    name="syozokuSankaformselectOther"
-                    class="form-control mt-2"
-                    value="{{ old('syozokuSankaformselectOther') }}"
-                    placeholder="その他の所属状況を入力してください"
-                >
-            </div>
-
-            <div class="form-group">
-                <div class="section-title">備考</div>
-                <textarea
-                    name="other_text"
-                    class="form-control"
-                    rows="5"
-                >{{ old('other_text') }}</textarea>
-            </div>
-
-            <div class="form-group">
-                <div class="section-title">
-                    参加登録費（事前）
-                    <span class="required-label">必須</span>
-                </div>
-                @foreach ($joinTypes as $key => $joinType)
-                    <label for="join_type-{{ $key }}" class="join-type-row">
-                        <div class="join-type-left">
-                            <input
-                                type="radio"
-                                class="join-type"
-                                name="join_type"
-                                value="{{ $key }}"
-                                data-price="{{ $joinType['price'] }}"
-                                data-banquet-price="{{ $joinType['banquet_price'] }}"
-                            >
-                            <span>{{ $joinType['label'] }}</span>
+                            @if (!empty($feeItems['registration_fee']->required_text))
+                                <span class="required-label">
+                                    {{ $feeItems['registration_fee']->required_text }}
+                                </span>
+                            @endif
                         </div>
 
-                        <div class="join-type-price">
-                          <span class="join-type-price-main">
-                              {{ number_format($joinType['price']) }}
-                          </span>
-                          <span class="join-type-price-unit">円</span>
-                      </div>
-                    </label>
-                @endforeach
-            </div>
+                        <div class="section-title mt-3 en">
+                            {{ $feeItems['registration_fee']->label_en }}
 
-            <div class="form-group">
-                <label>
-                    <input
-                        type="checkbox"
-                        name="tourtype"
-                        value="1"
-                        {{ old('tourtype') == '1' ? 'checked' : '' }}
-                    >
-                    旅費補助を希望する
-                </label>
+                            @if (!empty($feeItems['registration_fee']->required_text_en))
+                                <span class="required-label">
+                                    {{ $feeItems['registration_fee']->required_text_en }}
+                                </span>
+                            @endif
+                        </div>
 
-                <small class="form-text text-danger">
-                    自費参加の高校教員のみ対象です。希望金額は備考欄に記入してください。
-                </small>
-            </div>
+                        {{-- 説明文：HTMLとして表示する --}}
+                        <div class="mb-2 jp">
+                            {!! $feeItems['registration_fee']->description_ja ?? '' !!}
+                        </div>
 
-            <div class="form-group">
-                <label>
-                    <input
-                        type="checkbox"
-                        name="konshinkai"
-                        id="konshinkai"
-                        value="1"
-                        {{ old('konshinkai') == '1' ? 'checked' : '' }}
-                    >
-                    懇親会に参加する
-                </label>
+                        <div class="mb-2 en">
+                            {!! $feeItems['registration_fee']->description_en ?? '' !!}
+                        </div>
 
-                <small class="form-text">
-                    一般・教育：9,000円／学生：4,000円
-                </small>
-            </div>
+                        {{-- 選択肢 --}}
+                        @foreach ($feeItems['registration_fee']->options as $option)
+                            <label class="join-type-row">
+                                <div class="join-type-left">
+                                    <input
+                                        type="radio"
+                                        name="registration_fee"
+                                        value="{{ $option->value }}"
+                                        class="join-type"
+                                        data-price="{{ $option->amount }}"
+                                        {{ old('registration_fee') == $option->value ? 'checked' : '' }}
+                                    >
 
-            <div class="form-group">
-                <label>合計金額</label>
-                <p class="h4">
-                    <span id="total">0</span>円
-                </p>
+                                    <span class="jp">{{ $option->label_ja }}</span>
+                                    <span class="en">{{ $option->label_en }}</span>
+                                </div>
 
-                <input
-                    type="hidden"
-                    name="all"
-                    id="all"
-                    value="0"
-                >
-            </div>
+                                <div class="join-type-price">
+                                    <span class="join-type-price-main">
+                                        {{ number_format($option->amount) }}
+                                    </span>
 
-            <div class="form-group">
-                <label>
-                    <input
-                        type="checkbox"
-                        name="mail_send"
-                        value="on"
-                        {{ old('mail_send') === 'on' ? 'checked' : '' }}
-                    >
-                    参加者へメールを送る
-                </label>
-            </div>
+                                    <span class="join-type-price-unit jp">
+                                        {{ $feeItems['registration_fee']->currency_label_ja }}
+                                    </span>
 
-            <div class="form-group">
-                <div class="section-title">
-                    管理用備考
+                                    <span class="join-type-price-unit en">
+                                        {{ $feeItems['registration_fee']->currency_label_en }}
+                                    </span>
+                                </div>
+                            </label>
+                        @endforeach
+                    </div>
                 </div>
-                <textarea
-                    name="bikou"
-                    class="form-control"
-                    rows="3"
-                >{{ old('bikou') }}</textarea>
-            </div>
+            @endif
 
-            <div class="form-group">
-                <label class="mr-4">
-                    <input
-                        type="radio"
-                        name="selecter"
-                        value="1"
-                        {{ old('selecter') == '1' ? 'checked' : '' }}
-                    >
-                    選考委員
-                </label>
+            @if (isset($feeItems['banquet_fee']))
+                <div class="form-row">
+                    <div class="col-md-12">
 
-                <label>
-                    <input
-                        type="radio"
-                        name="selecter"
-                        value="0"
-                        {{ old('selecter', '0') == '0' ? 'checked' : '' }}
-                    >
-                    非選考委員
-                </label>
+                        {{-- 見出し --}}
+                        <div class="section-title mt-3 jp">
+                            {{ $feeItems['banquet_fee']->label_ja }}
+
+                            @if (!empty($feeItems['banquet_fee']->required_text))
+                                <span class="required-label">
+                                    {{ $feeItems['banquet_fee']->required_text }}
+                                </span>
+                            @endif
+                        </div>
+
+                        <div class="section-title mt-3 en">
+                            {{ $feeItems['banquet_fee']->label_en }}
+
+                            @if (!empty($feeItems['banquet_fee']->required_text_en))
+                                <span class="required-label">
+                                    {{ $feeItems['banquet_fee']->required_text_en }}
+                                </span>
+                            @endif
+                        </div>
+
+                        {{-- 説明文 --}}
+                        <div class="mb-2 jp">
+                            {!! $feeItems['banquet_fee']->description_ja ?? '' !!}
+                        </div>
+
+                        <div class="mb-2 en">
+                            {!! $feeItems['banquet_fee']->description_en ?? '' !!}
+                        </div>
+
+                        {{-- 選択肢 --}}
+                        @foreach ($feeItems['banquet_fee']->options as $option)
+                            <label class="join-type-row">
+                                <div class="join-type-left">
+
+                                    <input
+                                        type="checkbox"
+                                        name="banquet_fee"
+                                        value="{{ $option->value }}"
+                                        class="banquet-fee"
+                                        data-prices='@json(
+                                            $option->prices->pluck("amount", "join_type_id")
+                                        )'
+                                        {{ old('banquet_fee') == $option->value ? 'checked' : '' }}
+                                    >
+
+                                    <span class="jp">{{ $option->label_ja }}</span>
+                                    <span class="en">{{ $option->label_en }}</span>
+                                </div>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            {{-- 合計 --}}
+            @if (isset($feeItems['total_fee']))
+                <div class="form-row mt-4">
+                    <div class="col-md-12">
+                        <div class="join-type-row ">
+
+                            <div class="join-type-left">
+                                <h4 class="jp">
+                                    {{ $feeItems['total_fee']->label_ja }}
+                                </h4>
+
+                                <h4 class="en">
+                                    {{ $feeItems['total_fee']->label_en }}
+                                </h4>
+                            </div>
+
+                            <div class="join-type-price">
+                                <h4
+                                    id="total-fee"
+                                    class=""
+                                >
+                                    0
+                                </h4>
+
+                                <h4 class=" jp">
+                                    {{ $feeItems['total_fee']->currency_label_ja }}
+                                </h4>
+
+                                <h4 class="en">
+                                    {{ $feeItems['total_fee']->currency_label_en }}
+                                </h4>
+                            </div>
+
+                        </div>
+
+                        {{-- 保存用 --}}
+                        <input
+                            type="hidden"
+                            name="total_fee_amount"
+                            id="total-fee-input"
+                            value="0"
+                        >
+                    </div>
+                </div>
+            @endif
+
+            <div class="d-flex mt-4">
+                <input
+                    type="checkbox"
+                    name="send"
+                    id="send"
+                    value="on"
+                    {{ old('send') == 'on' ? 'checked' : '' }}
+                />
+                <label for="send" class="mt-2 ml-2">参加者へメールを送る</label>
             </div>
 
             <button
@@ -543,49 +479,141 @@
     </div>
 </form>
 
+@section('js')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const password = document.getElementById('password');
-    const displayButton = document.getElementById('password-display');
-    const joinTypes = document.querySelectorAll('.join-type');
-    const banquet = document.getElementById('konshinkai');
-    const total = document.getElementById('total');
-    const totalInput = document.getElementById('all');
 
-    // パスワードの表示・非表示を切り替える
-    displayButton?.addEventListener('click', function () {
-        password.type = password.type === 'password' ? 'text' : 'password';
-        displayButton.textContent = password.type === 'password' ? '表示' : '非表示';
-    });
+$(function () {
+    $('.js-postcode').on('change', function () {
+        // ハイフンを除去する
+        const postcode = $(this).val().replace('-', '');
 
-    // 参加費と懇親会費の合計を計算する
-    function calculateTotal() {
-        const selectedJoinType = document.querySelector('.join-type:checked');
-
-        if (!selectedJoinType) {
-            total.textContent = '0';
-            totalInput.value = '0';
+        // 郵便番号7桁以外は処理しない
+        if (!/^\d{7}$/.test(postcode)) {
             return;
         }
 
-        // DB由来の金額をdata属性から取得する
-        const participationFee = Number(selectedJoinType.dataset.price || 0);
-        const banquetFee = banquet.checked
-            ? Number(selectedJoinType.dataset.banquetPrice || 0)
-            : 0;
+        const $postcode = $(this);
 
-        const amount = participationFee + banquetFee;
+        $.ajax({
+            url: 'https://zipcloud.ibsnet.co.jp/api/search',
+            type: 'GET',
+            dataType: 'jsonp',
+            data: {
+                zipcode: postcode
+            }
+        }).done(function (response) {
+            if (!response.results || response.results.length === 0) {
+                return;
+            }
 
-        total.textContent = amount.toLocaleString();
-        totalInput.value = amount;
-    }
+            const result = response.results[0];
 
-    joinTypes.forEach(function (element) {
-        element.addEventListener('change', calculateTotal);
+            // 郵便番号入力欄の次にある入力欄へ住所を設定する
+            const $address = $postcode
+                .closest('.form-row')
+                .nextAll('.form-row')
+                .first()
+                .find('input[type="text"]')
+                .first();
+
+            $address.val(
+                result.address1 +
+                result.address2 +
+                result.address3
+            );
+        });
+
+    });
+    // 初期表示は日本語のみ
+    $('.jp').show();
+    $('.en').hide();
+
+    // 日本語表示
+    $('#show-jp').on('click', function () {
+        $('.jp').show();
+        $('.en').hide();
+        // placeholderを日本語にする
+        $('.js-language-input').each(function () {
+            $(this).attr('placeholder', $(this).data('placeholder-ja'));
+        });
     });
 
-    banquet?.addEventListener('change', calculateTotal);
+    // 英語表示
+    $('#show-en').on('click', function () {
+        $('.jp').hide();
+        $('.en').show();
+        // placeholderを英語にする
+        $('.js-language-input').each(function () {
+            $(this).attr('placeholder', $(this).data('placeholder-en'));
+        });
+    });
+    // パスワード表示
+    $(".lock").on("click",function(){
+        $(".password").attr("type", "text");
+    });
 
-    calculateTotal();
+
+    // 参加登録費 + 懇親会費を計算する
+    function calculateTotalFee() {
+
+        let total = 0;
+
+        // 選択されている参加区分
+        const $registrationFee = $('.join-type:checked');
+
+        if ($registrationFee.length === 0) {
+            $('#total-fee').text('0');
+            $('#total-fee-input').val(0);
+            return;
+        }
+
+        // 参加登録費
+        const registrationFee = Number(
+            $registrationFee.data('price')
+        ) || 0;
+
+        total += registrationFee;
+
+        // 選択した参加区分
+        const joinTypeId = String(
+            $registrationFee.val()
+        );
+
+        // 懇親会に参加する場合
+        $('.banquet-fee:checked').each(function () {
+
+            const prices = $(this).data('prices') || {};
+
+            // 参加区分に対応した懇親会費
+            const banquetFee = Number(
+                prices[joinTypeId]
+            ) || 0;
+
+            total += banquetFee;
+        });
+
+        // 合計表示
+        $('#total-fee').text(
+            total.toLocaleString()
+        );
+
+        // hiddenへ保存
+        $('#total-fee-input').val(total);
+    }
+
+    // 参加区分変更
+    $('.join-type').on('change', function () {
+        calculateTotalFee();
+    });
+
+    // 懇親会変更
+    $('.banquet-fee').on('change', function () {
+        calculateTotalFee();
+    });
+
+    // 初期表示
+    calculateTotalFee();
+
 });
 </script>
+@stop

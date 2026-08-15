@@ -9,6 +9,10 @@ use App\Services\SankaFormService;
 use App\Http\Requests\SankaParticipantStoreRequest;
 use App\Services\SankaParticipantService;
 use App\Models\SankaParticipant;
+use App\Models\SankaFormItem;
+use App\Models\SankaFeeItem;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\RegistrationMail;
 
 class SankaListController extends Controller
 {
@@ -17,13 +21,28 @@ class SankaListController extends Controller
      */
     public function list()
     {
+        // 参加者テーブル
+        $headers = SankaFormItem::query()
+            // 有効かつ一覧表示対象のみ取得する
+            ->where('status', 1)
+            ->where('list_display', 1)
+            // 受付番号を必ず先頭にする
+            ->orderByRaw("CASE WHEN name = 'reception_number' THEN 0 ELSE 1 END")
+            ->orderBy('sort_order')
+            ->get()
+            ->map(function ($item) {
+                // []で囲まれた文字をすべて除去する
+                $item->label_ja = preg_replace('/\[[^\]]*\]/u', '', $item->label_ja);
+
+                return $item;
+            });
         //
         // 参加者を受付番号順で取得する
         $lists = SankaParticipant::query()
             ->orderBy('reception_serial')
             ->get();
 
-        return view('admin.sanka.list', compact('lists'));
+        return view('admin.sanka.list', compact('lists', 'headers'));
     }
 
     /**
@@ -33,20 +52,85 @@ class SankaListController extends Controller
         SankaFormService $sankaFormService
     ) {
 
-        // 共通フォームの選択肢を取得する
-        $addressTypes = $sankaFormService->getAddressTypes();
-        $expertiseTypes = $sankaFormService->getExpertiseTypes();
-        $societyTypes = $sankaFormService->getSocietyTypes();
-        $joinTypes = $sankaFormService->getJoinTypes();
+        // 参加入力フォームを取得する
+        $formItems = SankaFormItem::query()
+            ->where('status', 1)
+            ->with([
+                'options' => function ($query) {
+                    // 有効な選択肢のみ取得する
+                    $query->where('status', 1)
+                        ->orderBy('sort_order');
+                },
+            ])
+            ->orderBy('sort_order')
+            ->get()
+            ->map(function ($item) {
+                // []内の文字を取得する
+                preg_match('/\[([^\]]+)\]/u', $item->label_ja, $matches);
+                preg_match('/\[([^\]]+)\]/u', $item->label_en, $matchesen);
+
+                // []内の文字を別キーに保持する
+                $item->required_text = $matches[1] ?? '';
+                $item->required_text_en = $matchesen[1] ?? '';
+
+                // []部分を表示文字から除去する
+                $item->label_ja = trim(
+                    preg_replace('/\[[^\]]*\]/u', '', $item->label_ja)
+                );
+                $item->label_en = trim(
+                    preg_replace('/\[[^\]]*\]/u', '', $item->label_en)
+                );
+
+                return $item;
+            })
+            ->keyBy('name');
+
+
+        // 参加費関連を3テーブルまとめて取得する
+        $feeItems = SankaFeeItem::query()
+            ->where('status', 1)
+            ->with([
+                'options' => function ($query) {
+                    // 有効な選択肢のみ取得する
+                    $query->where('status', 1)
+                        ->orderBy('sort_order');
+                },
+                'options.prices' => function ($query) {
+                    // 有効な金額のみ取得する
+                    $query->where('status', 1);
+                },
+            ])
+            ->orderBy('sort_order')
+            ->get()
+            ->map(function ($item) {
+                // []内の文字を取得する
+                preg_match('/\[([^\]]+)\]/u', $item->label_ja, $matches);
+                preg_match('/\[([^\]]+)\]/u', $item->label_en, $matchesen);
+
+                // []内の文字を別キーに保持する
+                $item->required_text = $matches[1] ?? '';
+                $item->required_text_en = $matchesen[1] ?? '';
+
+                // []部分を表示文字から除去する
+                $item->label_ja = trim(
+                    preg_replace('/\[[^\]]*\]/u', '', $item->label_ja)
+                );
+                $item->label_en = trim(
+                    preg_replace('/\[[^\]]*\]/u', '', $item->label_en)
+                );
+
+                return $item;
+            })
+            ->keyBy('name');
+
         return view(
             'admin.sanka.create',
             compact(
-                'addressTypes',
-                'expertiseTypes',
-                'societyTypes',
-                'joinTypes'
+                'formItems',
+                'feeItems',
             )
         );
+
     }
 
     /**
@@ -57,10 +141,27 @@ class SankaListController extends Controller
         SankaParticipantService $service
     ) {
         // DB定義で検証済みの入力値を登録する
-        $service->create($request->validated());
+        // フォームから送信された値を取得する
+        $data = $request->except('_token');
 
+
+        //$service->create($data);
+        // 参加者にメールを送る
+        if ($data['send']) {
+            $mailAddress = "chiba00807@gmail.com";
+            $subject = "あいうえお";
+            $body = "あああ";
+            Mail::to($mailAddress)->send(
+                new RegistrationMail(
+                    $subject,
+                    $body
+                )
+            );
+        }
+        echo "send";
+        exit();
         return redirect()
-            ->route('sanka.list.index')
+            ->route('sanka.list.editform')
             ->with('success', '参加者を登録しました。');
     }
 

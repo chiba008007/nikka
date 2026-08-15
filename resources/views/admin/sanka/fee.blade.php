@@ -27,6 +27,10 @@
 
                 {{-- 有効 --}}
                 <div class="form-group">
+                    {{-- 保存 --}}
+                    <button type="submit" class="btn btn-primary w-100 mb-3">
+                        保存
+                    </button>
                     <label>
                         <input
                             type="checkbox"
@@ -368,11 +372,62 @@
 
             </div>
         </div>
+        {{-- 合計 --}}
+        <div class="card mt-4">
+            <div class="card-header">
+                <strong>合計</strong>
+            </div>
 
-        {{-- 保存 --}}
-        <button type="submit" class="btn btn-primary w-100 mb-3">
-            保存
-        </button>
+            <div class="card-body">
+                <div class="form-group">
+                    <label>合計（日本語 / 英語）</label>
+
+                    <div class="row">
+                        <div class="col-6">
+                            <input
+                                type="text"
+                                name="total_fee[label_ja]"
+                                class="form-control"
+                                value="{{ old('total_fee.label_ja', $feeItems['total_fee']->label_ja ?? '') }}"
+                            >
+                        </div>
+
+                        <div class="col-6">
+                            <input
+                                type="text"
+                                name="total_fee[label_en]"
+                                class="form-control"
+                                value="{{ old('total_fee.label_en', $feeItems['total_fee']->label_en ?? '') }}"
+                            >
+                        </div>
+                    </div>
+
+                    <label class="mt-3">通貨表記（日本語 / 英語）</label>
+
+                    <div class="row">
+                        <div class="col-6">
+                            <input
+                                type="text"
+                                name="total_fee[currency_label_ja]"
+                                class="form-control"
+                                value="{{ old('total_fee.currency_label_ja', $feeItems['total_fee']->currency_label_ja ?? '') }}"
+                                placeholder="円"
+                            >
+                        </div>
+
+                        <div class="col-6">
+                            <input
+                                type="text"
+                                name="total_fee[currency_label_en]"
+                                class="form-control"
+                                value="{{ old('total_fee.currency_label_en', $feeItems['total_fee']->currency_label_en ?? '') }}"
+                                placeholder="yen"
+                            >
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </form>
 @stop
 

@@ -23,71 +23,50 @@ class SankaParticipantService
             // 次の受付通番を取得する
             $nextSerial = $this->getNextReceptionSerial();
 
-            // 参加区分と金額を取得する
-            $joinType = $this->getJoinType(
-                (int) $data['join_type']
-            );
+            // 登録データを作成する
+            $insertData = [
+                'reception_serial' => $nextSerial,
+                'reception_number' => $this->createReceptionNumber($nextSerial),
+                'status' => 1,
 
-            $banquetRequested = !empty($data['konshinkai']);
+                // ここを修正
+                'participation_status' => $data['registration_fee'] ?? 0,
 
-            // 参加区分ごとの懇親会費を取得する
-            $banquetFee = $banquetRequested
-                ? (int) ($joinType['banquet_price'] ?? 0)
-                : 0;
+                // ここを修正
+                'banquet_status' => $data['banquet_fee'] ?? 0,
+
+            ];
+
+            // add_column_1 ～ add_column_50 をそのまま登録する
+            for ($i = 1; $i <= 50; $i++) {
+                $key = 'add_column_' . $i;
+
+                if (!array_key_exists($key, $data)) {
+                    continue;
+                }
+
+                $value = $data[$key];
+
+                // checkboxなど複数値の場合はJSONで保存する
+                if (is_array($value)) {
+                    $value = json_encode(
+                        $value,
+                        JSON_UNESCAPED_UNICODE
+                    );
+                }
+
+                $insertData[$key] = $value;
+            }
+
+            // パスワードをハッシュ化する
+            if (!empty($insertData['add_column_15'])) {
+                $insertData['add_column_15'] = Hash::make(
+                    $insertData['add_column_15']
+                );
+            }
 
             // 参加者情報を登録する
-            return SankaParticipant::create([
-                'reception_serial' => $nextSerial,
-                'reception_number' => $this->createReceptionNumber(
-                    $nextSerial
-                ),
-                'family_name' => $data['name1'],
-                'first_name' => $data['name2'],
-                'family_name_kana' => $data['kana1'],
-                'first_name_kana' => $data['kana2'],
-                'organization' => $data['daigaku'],
-                'department' => $data['gakubu'],
-                'laboratory' => $data['kenkyu'] ?? null,
-                'address_type_id' => $data['address_type'],
-                'postal_code' => $data['post'],
-                'address' => $data['address'],
-                'telephone' => $data['tel'],
-                'fax' => $data['fax'] ?? null,
-                'email' => $data['mail'],
-                'password' => Hash::make($data['password']),
-
-                // チェックされた項目のIDだけを保存する
-                'expertise_ids' => array_map(
-                    'intval',
-                    array_keys($data['sankaformselect'] ?? [])
-                ),
-                'expertise_other' =>
-                    $data['sankaformselectother'] ?? null,
-
-                'society_ids' => array_map(
-                    'intval',
-                    array_keys(
-                        $data['syozokuSankaformselect'] ?? []
-                    )
-                ),
-                'society_other' =>
-                    $data['syozokuSankaformselectOther'] ?? null,
-
-                'join_type_id' => $data['join_type'],
-                'travel_support_requested' =>
-                    !empty($data['tourtype']),
-                'banquet_requested' => $banquetRequested,
-                'participation_fee' => (int) $joinType['price'],
-                'banquet_fee' => $banquetFee,
-                'total_amount' =>
-                    (int) $joinType['price'] + $banquetFee,
-                'remarks' => $data['other_text'] ?? null,
-                'admin_remarks' => $data['bikou'] ?? null,
-                'mail_sent' => !empty($data['mail_send']),
-                'is_selector' =>
-                    (string) ($data['selecter'] ?? '0') === '1',
-                'status' => 1,
-            ]);
+            return SankaParticipant::create($insertData);
         });
     }
 

@@ -10,6 +10,7 @@
 @stop
 @php
     $enable = "有効";
+    $listDisplay = "一覧表示";
     $required = "必須";
     $column = "2分割";
     $enablemessage = "「有効」を選択すると、この項目が画面に表示されます。";
@@ -23,7 +24,7 @@
     $title = "タイトル";
     $typearray = ['text','numeric','alpha','alphanumeric','kana'];
     $typemessage = "「text」はすべての文字、「numeric」は数字のみ、「alpha」は英字のみ、「alphanumeric」は半角英数記号のみ、「kana」はカナのみ入力できます。";
-    $groupKeyArray = ['text','radio','select','checkbox','postcode','mail','password','textarea' ];
+    $groupKeyArray = ['text','radio','select','checkbox','postcode','address','mail','mailcheck','password','textarea' ];
     $othermessage = "備考説明文";
 @endphp
 @section('content')
@@ -84,17 +85,17 @@
                         <div class="col-6">
                             <input
                                 type="text"
-                                name="back[title_jp]"
+                                name="back[label_ja]"
                                 class="form-control"
-                                value="{{ old('back.title_jp', $form['back']->label_ja ?? '') }}"
+                                value="{{ old('back.label_ja', $form['back']->label_ja ?? '') }}"
                             >
                         </div>
                         <div class="col-6">
                             <input
                                 type="text"
-                                name="back[title_en]"
+                                name="back[label_en]"
                                 class="form-control"
-                                value="{{ old('back.title_en', $form['back']->label_en ?? '') }}"
+                                value="{{ old('back.label_en', $form['back']->label_en ?? '') }}"
                             >
                         </div>
                     </div>
@@ -113,17 +114,17 @@
                         <div class="col-6">
                             <input
                                 type="text"
-                                name="next[title_jp]"
+                                name="next[label_ja]"
                                 class="form-control"
-                                value="{{ old('next.title_jp', $form['next']->label_ja ?? '') }}"
+                                value="{{ old('next.label_ja', $form['next']->label_ja ?? '') }}"
                             >
                         </div>
                         <div class="col-6">
                             <input
                                 type="text"
-                                name="next[title_en]"
+                                name="next[label_en]"
                                 class="form-control"
-                                value="{{ old('next.title_en', $form['next']->label_en ?? '') }}"
+                                value="{{ old('next.label_en', $form['next']->label_en ?? '') }}"
                             >
                         </div>
                     </div>
@@ -142,17 +143,17 @@
                         <div class="col-6">
                             <input
                                 type="text"
-                                name="print[title_jp]"
+                                name="print[label_ja]"
                                 class="form-control"
-                                value="{{ old('print.title_jp', $form['print']->label_ja ?? '') }}"
+                                value="{{ old('print.label_ja', $form['print']->label_ja ?? '') }}"
                             >
                         </div>
                         <div class="col-6">
                             <input
                                 type="text"
-                                name="print[title_en]"
+                                name="print[label_en]"
                                 class="form-control"
-                                value="{{ old('print.title_en', $form['print']->label_en ?? '') }}"
+                                value="{{ old('print.label_en', $form['print']->label_en ?? '') }}"
                             >
                         </div>
                     </div>
@@ -184,6 +185,29 @@
                     <li>{{$columnmessage }}</li>
                     <li>{{$typemessage }}</li>
                 </ul>
+                <div class="form-group">
+                    <h4>受付番号{{$lang}}</h4>
+
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <input
+                                type="text"
+                                name="reception_number[label_ja]"
+                                class="form-control"
+                                value="{{ old('reception_number.label_ja', $form['reception_number']->label_ja ?? '') }}"
+                            >
+                        </div>
+                        <div class="col-6">
+                            <input
+                                type="text"
+                                name="reception_number[label_en]"
+                                class="form-control"
+                                value="{{ old('reception_number.label_en', $form['reception_number']->label_en ?? '') }}"
+                            >
+                        </div>
+                    </div>
+
+                </div>
                 @for ($i = 1; $i <= 50; $i++)
                     @php
                         // DBのnameと同じキーを作成
@@ -206,6 +230,15 @@
                                         {{ old($titleKey . '.status', $form[$titleKey]->status ?? 0) ? 'checked' : '' }}
                                     >
                                     {{ $enable }}
+                                </label>
+                                <label class="mb-0 pb-0">
+                                    <input
+                                        type="checkbox"
+                                        name="{{ $titleKey }}[list_display]"
+                                        value="1"
+                                        {{ old($titleKey . '.list_display', $form[$titleKey]->list_display ?? 0) ? 'checked' : '' }}
+                                    >
+                                    {{ $listDisplay }}
                                 </label>
                                 <div>{{ $requiredmessage }}</div>
                             </div>

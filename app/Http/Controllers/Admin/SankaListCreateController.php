@@ -82,8 +82,13 @@ class SankaListCreateController extends Controller
                 }
 
                 // descriptionにはstatusがないため更新しない
-                if ($key !== 'description') {
+                if ($key !== 'description' && $key !== 'reception_number') {
                     $updateData['status'] = isset($data['status']) ? 1 : 0;
+                }
+
+                // reception_numberは固定項目のため一覧表示フラグを変更しない
+                if ($key !== 'reception_number') {
+                    $updateData['list_display'] = isset($data['list_display']) ? 1 : 0;
                 }
 
                 // add_column_1 ～ add_column_50のみ
@@ -158,9 +163,14 @@ class SankaListCreateController extends Controller
             ->where('name', 'banquet_fee')
             ->firstOrFail();
 
+        $feeItems = SankaFeeItem::query()
+            ->orderBy('sort_order')
+            ->get()
+            ->keyBy('name');
+
         return view(
             'admin.sanka.fee',
-            compact('feeItem', 'banquetFee')
+            compact('feeItem', 'banquetFee', 'feeItems')
         );
     }
 

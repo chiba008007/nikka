@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\MailEditController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\SankaFormController;
@@ -29,7 +30,14 @@ Route::get('/dashboard2', function () {
     return view('dashboard2');
 })->middleware(['auth', 'verified'])->name('dashboard2');
 
+Route::get('/home/list', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('home.list');
+
 Route::middleware('auth')->group(function () {
+    Route::get('/home/list/mail', [MailEditController::class, 'edit'])->name('home.list.mail');
+
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

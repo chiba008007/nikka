@@ -26,6 +26,22 @@ class AppServiceProvider extends ServiceProvider
         //
         Event::listen(BuildingMenu::class, function (BuildingMenu $event) {
 
+            // dashboard
+            if (request()->routeIs('home.*')) {
+
+                $event->menu->add([
+                    'text'  => __('sanka.title.list'),
+                    'route' => 'sanka.list.index',
+                    'icon'  => 'fas fa-fw fa-user',
+                ]);
+
+                $event->menu->add([
+                    'text'  => __('sanka.title.mailedit'),
+                    'route' => 'home.list.mail',
+                    'icon'  => 'fas fa-fw fa-envelope',
+                ]);
+
+            }
             // 参加管理画面
             if (request()->routeIs('sanka.*')) {
 
