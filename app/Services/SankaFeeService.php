@@ -32,6 +32,8 @@ class SankaFeeService
                 'label_en' => $registration['label_en'] ?? '',
                 'description_ja' => $registration['description_ja'] ?? null,
                 'description_en' => $registration['description_en'] ?? null,
+                'error_message_ja' => $registration['error_message_ja'] ?? null,
+                'error_message_en' => $registration['error_message_en'] ?? null,
                 'currency_label_ja' => $registration['currency_label_ja'] ?? '円',
                 'currency_label_en' => $registration['currency_label_en'] ?? 'yen',
                 'status' => isset($registration['status']) ? 1 : 0,

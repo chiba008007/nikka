@@ -83,12 +83,12 @@ class AppServiceProvider extends ServiceProvider
                         ],
                         [
                             'text'  => '完了ページ',
-                            'route' => 'sanka.list.editform',
+                            'route' => 'sanka.list.complete',
                             'icon'  => 'far fa-fw fa-circle',
                         ],
                         [
-                            'text'  => '参加者申込完了ページ',
-                            'route' => 'sanka.list.editform',
+                            'text'  => '参加申込ﾛｸﾞｲﾝﾍﾟｰｼﾞ',
+                            'route' => 'sanka.list.loginform',
                             'icon'  => 'far fa-fw fa-circle',
                         ],
                         [

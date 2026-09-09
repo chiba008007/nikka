@@ -197,8 +197,7 @@ class SankaListCreateController extends Controller
     public function confirm(Request $request)
     {
         // title の設定を1件取得
-        $form = SankaFormItem::where('status', 1)
-            ->orderBy('sort_order')
+        $form = SankaFormItem::orderBy('sort_order')
             ->get()
             ->keyBy('name');
 
@@ -207,8 +206,130 @@ class SankaListCreateController extends Controller
     }
     public function confirmUpdate(Request $request)
     {
-        $lists = [];
-        return view('admin.sanka.confirm', compact('lists'));
 
+        $data = $request->input('description_confirm', []);
+
+        $item = SankaFormItem::where('name', 'description_confirm')->first();
+
+        if ($item) {
+            $item->update([
+                'label_ja' => $data['label_ja'] ?? '',
+                'label_en' => $data['label_en'] ?? ''
+            ]);
+        }
+        return redirect()
+            ->back()
+            ->with('success', '更新しました。');
     }
+
+    /**
+     * 参加者登録確認フォーム編集
+     */
+    public function complete(Request $request)
+    {
+        // title の設定を1件取得
+        $form = SankaFormItem::orderBy('sort_order')
+            ->get()
+            ->keyBy('name');
+
+        return view('admin.sanka.complete', compact('form'));
+    }
+    public function completeUpdate(Request $request)
+    {
+        DB::transaction(function () use ($request) {
+
+            foreach ([
+                'complete_title',
+                'complete_join_id',
+                'complete_message',
+                'complete_explain',
+                ] as $key) {
+
+                $data = $request->input($key, []);
+
+                $item = SankaFormItem::where('name', $key)->first();
+
+                if (!$item) {
+                    continue;
+                }
+
+                $item->update([
+                    'label_ja' => $data['label_ja'] ?? '',
+                    'label_en' => $data['label_en'] ?? '',
+                ]);
+            }
+        });
+
+        return redirect()
+            ->back()
+            ->with('success', '更新しました。');
+    }
+    /**
+     * 参加者登録確認フォーム編集
+     */
+    public function loginForm(Request $request)
+    {
+        // title の設定を1件取得
+        $form = SankaFormItem::orderBy('sort_order')
+            ->get()
+            ->keyBy('name');
+
+        return view('admin.sanka.loginForm', compact('form'));
+    }
+    public function loginUpdate(Request $request)
+    {
+        DB::transaction(function () use ($request) {
+
+            foreach ([
+                'login_form_title',
+                'login_form_descript',
+                'login_form_login_id',
+                'login_form_login_password',
+                ] as $key) {
+
+                $data = $request->input($key, []);
+
+                $item = SankaFormItem::where('name', $key)->first();
+
+                if (!$item) {
+                    continue;
+                }
+
+                $item->update([
+                    'label_ja' => $data['label_ja'] ?? '',
+                    'label_en' => $data['label_en'] ?? '',
+                ]);
+            }
+
+            foreach ([
+                'login_form_login_id',
+                'login_form_login_password',
+                ] as $key) {
+
+                $data = $request->input($key, []);
+
+                $item = SankaFormItem::where('name', $key)->first();
+
+                if (!$item) {
+                    continue;
+                }
+
+                $item->update([
+                    'required' => $data['required'] ?? 0,
+                    'placeholder_ja' => $data['placeholder_ja'] ?? '',
+                    'placeholder_en' => $data['placeholder_en'] ?? '',
+                    'error_message_ja' => $data['error_message_ja'] ?? '',
+                    'error_message_en' => $data['error_message_en'] ?? '',
+                ]);
+            }
+
+
+        });
+
+        return redirect()
+            ->back()
+            ->with('success', '更新しました。');
+    }
+
+
 }

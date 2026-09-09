@@ -115,10 +115,7 @@
     @endif
 
     <div class="card">
-        <div class="w-25 d-flex ml-auto justify-content-end pt-2 pr-2">
-            <button type="button" class="form-control w-25 btn-warning" id="show-jp" >JP</button>
-            <button type="button" class="form-control w-25 btn-warning ml-2" id="show-en">EN</button>
-        </div>
+        <x-language-switch />
 
         <div class="card-body">
             <div class="form-group jp ">
@@ -457,7 +454,22 @@
             @endif
 
             <div class="d-flex mt-4">
+
+                <button
+                    type="submit"
+                    name="regist"
+                    value="on"
+                    class="btn btn-primary jp"
+                >{{ $formItems[ 'regist' ]->label_ja }}</button>
+                <button
+                    type="submit"
+                    name="regist"
+                    value="on"
+                    class="btn btn-primary en"
+                >{{ $formItems[ 'regist' ]->label_en }}</button>
+
                 <input
+                    class="ml-5"
                     type="checkbox"
                     name="send"
                     id="send"
@@ -467,14 +479,7 @@
                 <label for="send" class="mt-2 ml-2">参加者へメールを送る</label>
             </div>
 
-            <button
-                type="submit"
-                name="regist"
-                value="on"
-                class="btn btn-primary"
-            >
-                登録する
-            </button>
+
         </div>
     </div>
 </form>
@@ -524,29 +529,7 @@ $(function () {
         });
 
     });
-    // 初期表示は日本語のみ
-    $('.jp').show();
-    $('.en').hide();
 
-    // 日本語表示
-    $('#show-jp').on('click', function () {
-        $('.jp').show();
-        $('.en').hide();
-        // placeholderを日本語にする
-        $('.js-language-input').each(function () {
-            $(this).attr('placeholder', $(this).data('placeholder-ja'));
-        });
-    });
-
-    // 英語表示
-    $('#show-en').on('click', function () {
-        $('.jp').hide();
-        $('.en').show();
-        // placeholderを英語にする
-        $('.js-language-input').each(function () {
-            $(this).attr('placeholder', $(this).data('placeholder-en'));
-        });
-    });
     // パスワード表示
     $(".lock").on("click",function(){
         $(".password").attr("type", "text");

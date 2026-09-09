@@ -66,7 +66,29 @@
                         </div>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label>エラーメッセージ（日本語 / 英語）</label>
 
+                    <div class="row">
+                        <div class="col-6">
+                            <input
+                                type="text"
+                                name="registration[error_message_ja]"
+                                class="form-control"
+                                value="{{ old('registration.error_message_ja', $feeItem->error_message_ja ?? '') }}"
+                            >
+                        </div>
+
+                        <div class="col-6">
+                            <input
+                                type="text"
+                                name="registration[error_message_en]"
+                                class="form-control"
+                                value="{{ old('registration.error_message_en', $feeItem->error_message_en ?? '') }}"
+                            >
+                        </div>
+                    </div>
+                </div>
                 {{-- 説明文 --}}
                 <div class="form-group">
                     <label>説明文（日本語）</label>

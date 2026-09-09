@@ -130,6 +130,35 @@
                     </div>
                 </div>
                 <div class="form-group">
+                    <label>登録ボタン名 {{$lang}}</label>
+                    <label class="row mb-2 ml-2">
+                        <input
+                            type="checkbox"
+                            name="regist[status]"
+                            value="1"
+                            {{ old('regist.status', $form['regist']->status ?? 0) ? 'checked' : '' }}
+                        > {{$enable}}
+                    </label>
+                    <div class="row">
+                        <div class="col-6">
+                            <input
+                                type="text"
+                                name="regist[label_ja]"
+                                class="form-control"
+                                value="{{ old('regist.label_ja', $form['regist']->label_ja ?? '') }}"
+                            >
+                        </div>
+                        <div class="col-6">
+                            <input
+                                type="text"
+                                name="regist[label_en]"
+                                class="form-control"
+                                value="{{ old('regist.label_en', $form['regist']->label_en ?? '') }}"
+                            >
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
                     <label>印刷ボタン名 {{$lang}}</label>
                     <label class="row mb-2 ml-2">
                         <input
@@ -154,6 +183,64 @@
                                 name="print[label_en]"
                                 class="form-control"
                                 value="{{ old('print.label_en', $form['print']->label_en ?? '') }}"
+                            >
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>参加登録ページへ戻る {{$lang}}</label>
+                    <label class="row mb-2 ml-2">
+                        <input
+                            type="checkbox"
+                            name="complete_back_button[status]"
+                            value="1"
+                            {{ old('complete_back_button.status', $form['complete_back_button']->status ?? 0) ? 'checked' : '' }}
+                        > {{$enable}}
+                    </label>
+                    <div class="row">
+                        <div class="col-6">
+                            <input
+                                type="text"
+                                name="complete_back_button[label_ja]"
+                                class="form-control"
+                                value="{{ old('complete_back_button.label_ja', $form['complete_back_button']->label_ja ?? '') }}"
+                            >
+                        </div>
+                        <div class="col-6">
+                            <input
+                                type="text"
+                                name="complete_back_button[label_en]"
+                                class="form-control"
+                                value="{{ old('complete_back_button.label_en', $form['complete_back_button']->label_en ?? '') }}"
+                            >
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>講演登録に進む {{$lang}}</label>
+                    <label class="row mb-2 ml-2">
+                        <input
+                            type="checkbox"
+                            name="complete_go_lecture[status]"
+                            value="1"
+                            {{ old('complete_go_lecture.status', $form['complete_go_lecture']->status ?? 0) ? 'checked' : '' }}
+                        > {{$enable}}
+                    </label>
+                    <div class="row">
+                        <div class="col-6">
+                            <input
+                                type="text"
+                                name="complete_go_lecture[label_ja]"
+                                class="form-control"
+                                value="{{ old('complete_go_lecture.label_ja', $form['complete_go_lecture']->label_ja ?? '') }}"
+                            >
+                        </div>
+                        <div class="col-6">
+                            <input
+                                type="text"
+                                name="complete_go_lecture[label_en]"
+                                class="form-control"
+                                value="{{ old('complete_go_lecture.label_en', $form['complete_go_lecture']->label_en ?? '') }}"
                             >
                         </div>
                     </div>

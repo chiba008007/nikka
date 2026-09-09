@@ -16,6 +16,8 @@ class SankaFeeItem extends Model
         'type',
         'description_ja',
         'description_en',
+        'error_message_ja',
+        'error_message_en',
         'currency_label_ja',
         'currency_label_en',
         'sort_order',

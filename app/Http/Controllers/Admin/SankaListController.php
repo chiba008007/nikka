@@ -144,10 +144,9 @@ class SankaListController extends Controller
         // フォームから送信された値を取得する
         $data = $request->except('_token');
 
-
-        //$service->create($data);
+        $service->create($data);
         // 参加者にメールを送る
-        if ($data['send']) {
+        if (isset($data['send']) && $data['send']) {
             $mailAddress = "chiba00807@gmail.com";
             $subject = "あいうえお";
             $body = "あああ";

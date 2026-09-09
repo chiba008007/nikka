@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\SankaFormItem;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SankaParticipantStoreRequest extends FormRequest
@@ -16,43 +17,146 @@ class SankaParticipantStoreRequest extends FormRequest
 
     public function rules(): array
     {
-        return [];
-        /*
-        return [
-            // 氏名
-            'name1' => ['required', 'string', 'max:100'],
-            'name2' => ['required', 'string', 'max:100'],
-            'kana1' => ['required', 'string', 'max:100'],
-            'kana2' => ['required', 'string', 'max:100'],
+        $rules = [];
 
-            // 所属情報
-            'daigaku' => ['required', 'string', 'max:255'],
-            'gakubu' => ['required', 'string', 'max:255'],
-            'kenkyu' => ['nullable', 'string', 'max:255'],
+        // 有効な入力項目を取得する
+        $items = SankaFormItem::where('status', 1)
+            ->where('name', 'like', 'add_column_%')
+            ->get();
 
-            // 連絡先
-            'address_type' => ['required', 'integer'],
-            'post' => ['required', 'string', 'max:8'],
-            'address' => ['required', 'string', 'max:500'],
-            'tel' => ['required', 'string', 'max:30'],
-            'fax' => ['nullable', 'string', 'max:30'],
-            'mail' => ['required', 'email', 'max:255'],
-            'mail2' => ['required', 'same:mail'],
+        foreach ($items as $item) {
 
-            // その他
-            'password' => ['required', 'string', 'min:8'],
-            'sankaformselect' => ['nullable', 'array'],
-            'sankaformselectother' => ['nullable', 'string', 'max:255'],
-            'syozokuSankaformselect' => ['nullable', 'array'],
-            'syozokuSankaformselectOther' => ['nullable', 'string', 'max:255'],
-            'join_type' => ['required', 'integer'],
-            'tourtype' => ['nullable'],
-            'konshinkai' => ['nullable'],
-            'other_text' => ['nullable', 'string'],
-            'bikou' => ['nullable', 'string'],
-            'mail_send' => ['nullable'],
-            'selecter' => ['nullable', 'in:0,1'],
-        ];
-        */
+            /*
+             * checkbox
+             */
+            if ($item->group_key === 'checkbox') {
+                $rules[$item->name . '.values'] = [
+                    $item->required ? 'required' : 'nullable',
+                    'array',
+                    'min:1',
+                ];
+
+                $rules[$item->name . '.other'] = [
+                    'nullable',
+                    'string',
+                ];
+
+                continue;
+            }
+
+            /*
+             * radio
+             */
+            if ($item->group_key === 'radio') {
+                $rules[$item->name] = [
+                    $item->required ? 'required' : 'nullable',
+                ];
+
+                continue;
+            }
+
+            /*
+             * メールアドレス
+             */
+            if ($item->group_key === 'mail') {
+                $rules[$item->name] = [
+                    $item->required ? 'required' : 'nullable',
+                    'email',
+                ];
+
+                continue;
+            }
+
+            /*
+             * 確認用メールアドレス
+             */
+            if ($item->group_key === 'mailcheck') {
+                $rules[$item->name] = [
+                    $item->required ? 'required' : 'nullable',
+                    'email',
+                    'same:add_column_13',
+                ];
+
+                continue;
+            }
+
+            /*
+             * その他
+             */
+            $itemRules = [
+                $item->required ? 'required' : 'nullable',
+            ];
+
+            switch ($item->type) {
+                case 'numeric':
+                    $itemRules[] = 'numeric';
+                    break;
+
+                case 'alpha':
+                    $itemRules[] = 'alpha';
+                    break;
+
+                case 'alphanumeric':
+                    $itemRules[] = 'alpha_num:ascii';
+                    break;
+
+                case 'kana':
+                    $itemRules[] = 'regex:/^[ァ-ヶー\s]+$/u';
+                    break;
+
+                case 'text':
+                default:
+                    $itemRules[] = 'string';
+                    break;
+            }
+
+            $rules[$item->name] = $itemRules;
+        }
+
+        return $rules;
     }
+
+    public function messages(): array
+    {
+        $messages = [];
+
+        // 現在の言語を取得する
+        $language = session('language', 'jp');
+
+        $items = SankaFormItem::where('status', 1)
+            ->where('name', 'like', 'add_column_%')
+            ->get();
+
+        foreach ($items as $item) {
+
+            // 言語に応じたメッセージを取得する
+            $message = $language === 'en'
+                ? $item->error_message_en
+                : $item->error_message_ja;
+
+            if (empty($message)) {
+                continue;
+            }
+
+            // checkbox
+            if ($item->group_key === 'checkbox') {
+                $messages[$item->name . '.values.required'] = $message;
+                $messages[$item->name . '.values.min'] = $message;
+                continue;
+            }
+
+            // 通常項目
+            $messages[$item->name . '.required'] = $message;
+            $messages[$item->name . '.numeric'] = $message;
+            $messages[$item->name . '.alpha'] = $message;
+            $messages[$item->name . '.alpha_num'] = $message;
+            $messages[$item->name . '.regex'] = $message;
+            $messages[$item->name . '.email'] = $message;
+            $messages[$item->name . '.same'] = $message;
+            $messages[$item->name . '.string'] = $message;
+        }
+
+        return $messages;
+    }
+
 }

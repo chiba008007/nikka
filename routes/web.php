@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\SankaFormController;
 use App\Http\Controllers\Admin\SankaListController;
 use App\Http\Controllers\Admin\SankaListCreateController;
 use App\Http\Controllers\Admin\ParticipantController;
+use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,6 +37,7 @@ Route::get('/home/list', function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/home/list/mail', [MailEditController::class, 'edit'])->name('home.list.mail');
+    Route::post('/home/list/mail', [MailEditController::class, 'update'])->name('home.list.mail.update');
 
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -52,9 +54,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/sanka/list/confirm/form', [SankaListCreateController::class, 'confirm'])->name('sanka.list.confirm');
     Route::post('/sanka/list/confirm/form', [SankaListCreateController::class, 'confirmUpdate'])->name('sanka.list.confirm.update');
 
+    // 完了ページ
+    Route::get('/sanka/list/complete/form', [SankaListCreateController::class, 'complete'])->name('sanka.list.complete');
+    Route::post('/sanka/list/complete/form', [SankaListCreateController::class, 'completeUpdate'])->name('sanka.list.complete.update');
+
     // 参加費
     Route::get('/sanka/list/fee/form', [SankaListCreateController::class, 'fee'])->name('sanka.list.fee');
     Route::put('/sanka/list/fee/form', [SankaListCreateController::class, 'feeUpdate'])->name('sanka.fee.update');
+
+    // 参加者ログインページ
+    Route::get('/sanka/list/login/form', [SankaListCreateController::class, 'loginForm'])->name('sanka.list.loginform');
+    Route::post('/sanka/list/login/form', [SankaListCreateController::class, 'loginUpdate'])->name('sanka.list.loginform.update');
 
 
     // 参加者登録処理
@@ -72,6 +82,17 @@ Route::middleware('auth')->group(function () {
     Route::post('/sanka/form/delete', [SankaFormController::class, 'delete'])->name('sanka.form.delete');
 
     // Route::get('/sanka/list', [SankaController::class, 'list'])->name('sanka.list');
+
+    Route::post('/language', function (Request $request) {
+        // 選択した言語をセッションへ保存する
+        session([
+            'language' => $request->input('language', 'jp'),
+        ]);
+
+        return response()->json([
+            'status' => 'ok',
+        ]);
+    })->name('language.set');
 
 });
 
