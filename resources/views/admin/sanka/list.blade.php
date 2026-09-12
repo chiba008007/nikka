@@ -30,13 +30,14 @@
             @forelse ($lists as $participant)
                 <tr>
                     @foreach ($headers as $header)
-                        {{-- ヘッダーのnameに対応する参加者データを表示する --}}
-                        <td>{{ $participant->{$header->name} ?? '' }}</td>
+                        <td>
+                            {{ $displayValues[$participant->id][$header->name] ?? '' }}
+                        </td>
                     @endforeach
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" class="text-center">
+                    <td colspan="{{ $headers->count() }}" class="text-center">
                         参加者情報はありません。
                     </td>
                 </tr>
@@ -74,6 +75,16 @@ $(function () {
         scrollY: '200px',
         scrollX: true,
         scrollCollapse: true
+    });
+
+    // カラム別検索
+    $('.dataTables_scrollHead .column-search input').on('keyup change', function () {
+        const columnIndex = $(this).closest('th').index();
+
+        table
+            .column(columnIndex)
+            .search(this.value)
+            .draw();
     });
 
     // テーブル高さを画面サイズに合わせる

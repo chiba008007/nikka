@@ -68,8 +68,7 @@ Route::middleware('auth')->group(function () {
 
 
     // 参加者登録処理
-    Route::post('/sanka/list', [SankaListController::class, 'store'])
-        ->name('sanka.list.store');
+    Route::post('/sanka/list', [SankaListController::class, 'store'])->name('sanka.list.store');
 
 
     // 参加者登録フォーム一覧

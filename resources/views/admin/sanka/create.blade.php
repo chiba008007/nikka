@@ -7,6 +7,8 @@
 @stop
 
 @section('content')
+
+@include('layouts.flash-message')
 <x-participant-form
     :action="route('sanka.list.store')"
     :formItems="$formItems"

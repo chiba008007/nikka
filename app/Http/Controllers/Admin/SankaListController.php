@@ -11,16 +11,17 @@ use App\Services\SankaParticipantService;
 use App\Models\SankaParticipant;
 use App\Models\SankaFormItem;
 use App\Models\SankaFeeItem;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\RegistrationMail;
+use App\Services\SankaParticipantMailService;
+use App\Services\SankaParticipantListService;
 
 class SankaListController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function list()
-    {
+    public function list(
+        SankaParticipantListService $listService
+    ) {
         // 参加者テーブル
         $headers = SankaFormItem::query()
             // 有効かつ一覧表示対象のみ取得する
@@ -42,7 +43,12 @@ class SankaListController extends Controller
             ->orderBy('reception_serial')
             ->get();
 
-        return view('admin.sanka.list', compact('lists', 'headers'));
+        // 表示用データを作成
+        $displayValues = $listService->makeDisplayValues(
+            $lists,
+            $headers
+        );
+        return view('admin.sanka.list', compact('lists', 'headers', 'displayValues'));
     }
 
     /**
@@ -136,31 +142,35 @@ class SankaListController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+
     public function store(
         SankaParticipantStoreRequest $request,
-        SankaParticipantService $service
+        SankaParticipantService $service,
+        SankaParticipantMailService $mailService
     ) {
-        // DB定義で検証済みの入力値を登録する
-        // フォームから送信された値を取得する
-        $data = $request->except('_token');
+        $send = $request->boolean('send');
 
-        $service->create($data);
-        // 参加者にメールを送る
-        if (isset($data['send']) && $data['send']) {
-            $mailAddress = "chiba00807@gmail.com";
-            $subject = "あいうえお";
-            $body = "あああ";
-            Mail::to($mailAddress)->send(
-                new RegistrationMail(
-                    $subject,
-                    $body
-                )
-            );
-        }
-        echo "send";
-        exit();
+        $data = $request->except([
+            '_token',
+            'send',
+        ]);
+
+        /*
+         * 参加者登録
+         */
+        $participant = $service->create($data);
+
+        /*
+         * メール送信
+         */
+        $mailService->sendRegistrationMail(
+            $data,
+            $participant,
+            $send
+        );
+
         return redirect()
-            ->route('sanka.list.editform')
+            ->route('sanka.list.create')
             ->with('success', '参加者を登録しました。');
     }
 
