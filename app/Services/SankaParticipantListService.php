@@ -12,6 +12,9 @@ class SankaParticipantListService
      */
     public function makeDisplayValues($lists, $headers): array
     {
+        // 支払ステータス
+        $paymentStatus = config('const.payment_status');
+
         // 入力項目と選択肢をまとめて取得
         $formItems = SankaFormItem::with('options')
             ->where('status', 1)
@@ -29,6 +32,56 @@ class SankaParticipantListService
                         $formItems
                     );
             }
+            // 参加種別
+            $displayValues[$participant->id]['participation_type']
+                = $participant->participationOption->label_ja ?? '';
+            // 懇親会参加
+            $banquetParticipation = config('const.banquet_participation');
+            $displayValues[$participant->id]['banquet_type']
+                = (int) $participant->banquet_status
+                    === $banquetParticipation['participate']['value']
+                        ? $banquetParticipation['participate']['label']
+                        : $banquetParticipation['not_participate']['label'];
+
+            // 参加費
+            $displayValues[$participant->id]['participation_amount']
+                = number_format(
+                    $participant->participationOption->amount ?? 0
+                );
+
+            // 懇親会費
+            $banquetAmount = 0;
+
+            if (
+                (int) $participant->banquet_status
+                === $banquetParticipation['participate']['value']
+                && $participant->banquetOption
+            ) {
+                $price = $participant->banquetOption->prices
+                    ->firstWhere(
+                        'join_type_id',
+                        $participant->participation_status
+                    );
+
+                $banquetAmount = $price->amount ?? 0;
+            }
+
+            $displayValues[$participant->id]['banquet_amount']
+                = number_format($banquetAmount);
+
+
+            // 支払いステータス
+            $displayValues[$participant->id]['participation_payment_status']
+                = (int) $participant->participation_payment_status
+                    === $paymentStatus['paid']['value']
+                        ? $paymentStatus['paid']['label']
+                        : $paymentStatus['unpaid']['label'];
+
+            $displayValues[$participant->id]['banquet_payment_status']
+                = (int) $participant->banquet_payment_status
+                    === $paymentStatus['paid']['value']
+                        ? $paymentStatus['paid']['label']
+                        : $paymentStatus['unpaid']['label'];
         }
 
         return $displayValues;

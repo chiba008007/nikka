@@ -329,7 +329,7 @@ return [
         ],
         [
             'text' => '講演管理',
-            'route' => 'dashboard',
+            'route' => 'koen.list.index',
             'topnav' => true,
         ],
         [

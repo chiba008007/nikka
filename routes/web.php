@@ -80,7 +80,16 @@ Route::middleware('auth')->group(function () {
     // 参加者登録フォーム削除
     Route::post('/sanka/form/delete', [SankaFormController::class, 'delete'])->name('sanka.form.delete');
 
+    Route::patch(
+        '/sanka/list/{participant}/payment-status',
+        [SankaListController::class, 'updatePaymentStatus']
+    )->name('sanka.payment-status.update');
+
+
     // Route::get('/sanka/list', [SankaController::class, 'list'])->name('sanka.list');
+    // 講演一覧
+    Route::get('/koen/list', [SankaListController::class, 'list'])->name('koen.list.index');
+
 
     Route::post('/language', function (Request $request) {
         // 選択した言語をセッションへ保存する

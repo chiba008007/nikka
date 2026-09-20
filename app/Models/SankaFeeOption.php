@@ -30,4 +30,15 @@ class SankaFeeOption extends Model
         // 参加区分ごとの料金
         return $this->hasMany(SankaFeeOptionPrice::class);
     }
+
+    public function banquetOption()
+    {
+        return $this->belongsTo(
+            SankaFeeOption::class,
+            'banquet_status',
+            'value'
+        )
+        ->where('sanka_fee_item_id', 2)
+        ->where('status', 1);
+    }
 }

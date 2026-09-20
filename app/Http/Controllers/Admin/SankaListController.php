@@ -13,6 +13,7 @@ use App\Models\SankaFormItem;
 use App\Models\SankaFeeItem;
 use App\Services\SankaParticipantMailService;
 use App\Services\SankaParticipantListService;
+use App\Services\SankaParticipantPaymentService;
 
 class SankaListController extends Controller
 {
@@ -39,10 +40,12 @@ class SankaListController extends Controller
             });
         //
         // 参加者を受付番号順で取得する
-        $lists = SankaParticipant::query()
+        $lists = SankaParticipant::with(
+            'participationOption',
+            'banquetOption.prices'
+        )
             ->orderBy('reception_serial')
             ->get();
-
         // 表示用データを作成
         $displayValues = $listService->makeDisplayValues(
             $lists,
@@ -174,28 +177,33 @@ class SankaListController extends Controller
             ->with('success', '参加者を登録しました。');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(SankaList $sankaList)
-    {
-        //
-    }
+    public function updatePaymentStatus(
+        Request $request,
+        SankaParticipant $participant,
+        SankaParticipantPaymentService $paymentService
+    ) {
+        $validated = $request->validate([
+            'payment_type' => [
+                'required',
+                'in:participation,banquet',
+            ],
+            'is_paid' => [
+                'required',
+                'boolean',
+            ],
+        ]);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(SankaList $sankaList)
-    {
-        //
-    }
+        $result = $paymentService->updatePaymentStatus(
+            $participant,
+            $validated['payment_type'],
+            (bool) $validated['is_paid']
+        );
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, SankaList $sankaList)
-    {
-        //
+        return response()->json([
+            'success' => true,
+            'value' => $result['value'],
+            'label' => $result['label'],
+        ]);
     }
 
     /**

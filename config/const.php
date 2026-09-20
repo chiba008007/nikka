@@ -66,4 +66,25 @@ return [
 
     'other_message' => '備考説明文',
 
+    'banquet_participation' => [
+        'not_participate' => [
+            'value' => 0,
+            'label' => '参加しない',
+        ],
+        'participate' => [
+            'value' => 1,
+            'label' => '参加する',
+        ],
+    ],
+    'payment_status' => [
+        'unpaid' => [
+            'value' => 0,
+            'label' => '未支払',
+        ],
+        'paid' => [
+            'value' => 1,
+            'label' => '支払済',
+        ],
+    ],
+
 ];

@@ -21,6 +21,8 @@ class SankaParticipant extends Model
         'status',
         'participation_status',
         'banquet_status',
+        'participation_payment_status',
+        'banquet_payment_status',
         'add_column_1',
         'add_column_2',
         'add_column_3',
@@ -78,5 +80,28 @@ class SankaParticipant extends Model
         'status' => 'integer',
         'participation_status' => 'integer',
         'banquet_status' => 'integer',
+        'participation_payment_status' => 'integer',
+        'banquet_payment_status' => 'integer',
     ];
+
+    public function participationOption()
+    {
+        return $this->belongsTo(
+            SankaFeeOption::class,
+            'participation_status', // sanka_participants側
+            'value'                 // sanka_fee_options側
+        )
+        ->where('sanka_fee_item_id', 1)
+        ->where('status', 1);
+    }
+    public function banquetOption()
+    {
+        return $this->belongsTo(
+            SankaFeeOption::class,
+            'banquet_status',
+            'value'
+        )
+        ->where('sanka_fee_item_id', 2)
+        ->where('status', 1);
+    }
 }
