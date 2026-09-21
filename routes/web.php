@@ -53,6 +53,13 @@ Route::middleware('auth')->group(function () {
     // 参加者確認ページ
     Route::get('/sanka/list/confirm/form', [SankaListCreateController::class, 'confirm'])->name('sanka.list.confirm');
     Route::post('/sanka/list/confirm/form', [SankaListCreateController::class, 'confirmUpdate'])->name('sanka.list.confirm.update');
+    // 編集
+    Route::get('/sanka/list/edit/{id}', [SankaListController::class, 'edit'])->name('sanka.list.edit');
+    // 参加者情報編集実施
+    Route::PUT('/sanka/list/edit/{id}', [SankaListController::class, 'update'])->name('sanka.list.update');
+    // 削除
+    Route::delete('/sanka/list/{id}', [SankaListController::class, 'destroy'])
+    ->name('sanka.list.destroy');
 
     // 完了ページ
     Route::get('/sanka/list/complete/form', [SankaListCreateController::class, 'complete'])->name('sanka.list.complete');

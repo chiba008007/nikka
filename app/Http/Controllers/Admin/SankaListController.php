@@ -10,7 +10,6 @@ use App\Http\Requests\SankaParticipantStoreRequest;
 use App\Services\SankaParticipantService;
 use App\Models\SankaParticipant;
 use App\Models\SankaFormItem;
-use App\Models\SankaFeeItem;
 use App\Services\SankaParticipantMailService;
 use App\Services\SankaParticipantListService;
 use App\Services\SankaParticipantPaymentService;
@@ -46,6 +45,7 @@ class SankaListController extends Controller
         )
             ->orderBy('reception_serial')
             ->get();
+
         // 表示用データを作成
         $displayValues = $listService->makeDisplayValues(
             $lists,
@@ -55,91 +55,61 @@ class SankaListController extends Controller
     }
 
     /**
+     * 参加者登録フォーム編集
+     */
+    public function edit(
+        int $id,
+        SankaFormService $sankaFormService
+    ) {
+        $participant = SankaParticipant::findOrFail($id);
+
+        $data = $sankaFormService->getFormData();
+        $data['participant'] = $participant;
+
+        return view('admin.sanka.edit', $data);
+    }
+
+    public function update(
+        Request $request,
+        int $id,
+        SankaParticipantService $service,
+        SankaParticipantMailService $mailService
+    ) {
+        $send = $request->boolean('send');
+        $participant = SankaParticipant::findOrFail($id);
+
+        $data = $request->except([
+            '_token',
+            '_method',
+            'regist',
+            'send',
+        ]);
+
+        $service->update($participant, $data);
+
+        /*
+         * メール送信
+         */
+        $mailService->sendRegistrationMail(
+            $data,
+            $participant,
+            $send
+        );
+
+        return redirect()
+            ->route('sanka.list.index')
+            ->with('success', '参加者情報を更新しました。');
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create(
         SankaFormService $sankaFormService
     ) {
+        $data = $sankaFormService->getFormData();
 
-        // 参加入力フォームを取得する
-        $formItems = SankaFormItem::query()
-            ->where('status', 1)
-            ->with([
-                'options' => function ($query) {
-                    // 有効な選択肢のみ取得する
-                    $query->where('status', 1)
-                        ->orderBy('sort_order');
-                },
-            ])
-            ->orderBy('sort_order')
-            ->get()
-            ->map(function ($item) {
-                // []内の文字を取得する
-                preg_match('/\[([^\]]+)\]/u', $item->label_ja, $matches);
-                preg_match('/\[([^\]]+)\]/u', $item->label_en, $matchesen);
-
-                // []内の文字を別キーに保持する
-                $item->required_text = $matches[1] ?? '';
-                $item->required_text_en = $matchesen[1] ?? '';
-
-                // []部分を表示文字から除去する
-                $item->label_ja = trim(
-                    preg_replace('/\[[^\]]*\]/u', '', $item->label_ja)
-                );
-                $item->label_en = trim(
-                    preg_replace('/\[[^\]]*\]/u', '', $item->label_en)
-                );
-
-                return $item;
-            })
-            ->keyBy('name');
-
-
-        // 参加費関連を3テーブルまとめて取得する
-        $feeItems = SankaFeeItem::query()
-            ->where('status', 1)
-            ->with([
-                'options' => function ($query) {
-                    // 有効な選択肢のみ取得する
-                    $query->where('status', 1)
-                        ->orderBy('sort_order');
-                },
-                'options.prices' => function ($query) {
-                    // 有効な金額のみ取得する
-                    $query->where('status', 1);
-                },
-            ])
-            ->orderBy('sort_order')
-            ->get()
-            ->map(function ($item) {
-                // []内の文字を取得する
-                preg_match('/\[([^\]]+)\]/u', $item->label_ja, $matches);
-                preg_match('/\[([^\]]+)\]/u', $item->label_en, $matchesen);
-
-                // []内の文字を別キーに保持する
-                $item->required_text = $matches[1] ?? '';
-                $item->required_text_en = $matchesen[1] ?? '';
-
-                // []部分を表示文字から除去する
-                $item->label_ja = trim(
-                    preg_replace('/\[[^\]]*\]/u', '', $item->label_ja)
-                );
-                $item->label_en = trim(
-                    preg_replace('/\[[^\]]*\]/u', '', $item->label_en)
-                );
-
-                return $item;
-            })
-            ->keyBy('name');
-
-        return view(
-            'admin.sanka.create',
-            compact(
-                'formItems',
-                'feeItems',
-            )
-        );
-
+        return view('admin.sanka.create', $data);
     }
 
     /**
@@ -209,9 +179,15 @@ class SankaListController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(SankaList $sankaList)
+    public function destroy($id)
     {
-        //
+        $participant = SankaParticipant::findOrFail($id);
+
+        $participant->delete();
+
+        return redirect()
+            ->back()
+            ->with('success', '参加者を削除しました。');
     }
 
     /**
@@ -221,6 +197,7 @@ class SankaListController extends Controller
     {
         $lists = [];
         return view('admin.sanka.editform', compact('lists'));
-
     }
+
+
 }

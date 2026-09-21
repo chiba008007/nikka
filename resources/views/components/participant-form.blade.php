@@ -95,6 +95,7 @@
     'method' => 'POST',
     'formItems' => [],
     'feeItems' => [],
+    'participant' => null,
 ])
 {{-- バリデーションエラーを表示する --}}
 @if ($errors->any())
@@ -168,7 +169,7 @@
                                         type="text"
                                         name="{{ $input->name }}"
                                         class="form-control js-postcode js-language-input"
-                                        value="{{ old($input->name) }}"
+                                        value="{{ old($input->name, $participant?->{$input->name}) }}"
                                         placeholder="{{ $input->placeholder_ja }}"
                                         data-placeholder-ja="{{ $input->placeholder_ja }}"
                                         data-placeholder-en="{{ $input->placeholder_en }}"
@@ -185,9 +186,39 @@
                                         data-placeholder-ja="{{ $input->placeholder_ja }}"
                                         data-placeholder-en="{{ $input->placeholder_en }}"
                                         {{ $required }}
-                                    >{{ old($input->name) }}</textarea>
+                                    >{{ old($input->name, $participant?->{$input->name}) }}</textarea>
                                 </div>
                             @elseif ($input->group_key === 'checkbox')
+                                @php
+                                    $checkboxValues = [];
+                                    $checkboxOther = '';
+
+                                    // バリデーションエラー後はoldを優先
+                                    $oldValue = old($input->name);
+
+                                    if ($oldValue !== null) {
+                                        $checkboxValues = $oldValue['values'] ?? [];
+                                        $checkboxOther = $oldValue['other'] ?? '';
+                                    } elseif ($participant) {
+
+                                        $raw = $participant->{$input->name};
+
+                                        if ($raw) {
+                                            $decoded = json_decode($raw, true);
+
+                                            if (isset($decoded['values'])) {
+                                                // 現在の形式
+                                                $checkboxValues = $decoded['values'] ?? [];
+                                                $checkboxOther = $decoded['other'] ?? '';
+                                            } elseif (is_array($decoded)) {
+                                                // 旧形式 ["1","4","10"]
+                                                $checkboxValues = $decoded;
+                                            }
+                                        }
+                                    }
+
+                                    $checkboxValues = array_map('strval', $checkboxValues);
+                                @endphp
                                 <div class="row">
                                     @foreach ($input->options as $option)
                                         <div class="col-4 ">
@@ -197,7 +228,7 @@
                                                     name="{{ $input->name }}[values][]"
                                                     id="{{ $input->name }}_{{ $option->value }}"
                                                     value="{{ $option->value }}"
-                                                    {{ old($input->name) == $option->value ? 'checked' : '' }}
+                                                    {{ in_array((string) $option->value, $checkboxValues, true) ? 'checked' : '' }}
                                                     {{ $required }}
                                                 >
                                                 <span class="jp">{{ $option->label_ja }}</span>
@@ -206,13 +237,14 @@
                                         </div>
                                     @endforeach
                                     <input
-                                    type='text'
-                                    name="{{ $input->name }}[other]"
-                                    class="form-control js-language-input"
-                                    placeholder="{{ $input->checkbox_note_description }}"
-                                    data-placeholder-ja="{{ $input->checkbox_note_description }}"
-                                    data-placeholder-en="{{ $input->checkbox_note_description_en }}"
-                                    />
+                                            type="text"
+                                            name="{{ $input->name }}[other]"
+                                            class="form-control js-language-input"
+                                            value="{{ $checkboxOther }}"
+                                            placeholder="{{ $input->checkbox_note_description }}"
+                                            data-placeholder-ja="{{ $input->checkbox_note_description }}"
+                                            data-placeholder-en="{{ $input->checkbox_note_description_en }}"
+                                        />
                                 </div>
 
                             @elseif ($input->group_key === 'radio')
@@ -228,7 +260,7 @@
                                                 name="{{ $input->name }}"
                                                 id="{{ $input->name }}_{{ $option->value }}"
                                                 value="{{ $option->value }}"
-                                                {{ old($input->name) == $option->value ? 'checked' : '' }}
+                                                {{ old($input->name, $participant?->{$input->name}) == $option->value ? 'checked' : '' }}
                                                 {{ $required }}
                                             >
                                             <span class="jp">{{ $option->label_ja }}</span>
@@ -245,7 +277,9 @@
                                         type="{{ $input->group_key === 'password' ? 'password':'text'}}"
                                         name="{{ $input->name }}"
                                         class="form-control {{$input->group_key}} js-language-input {{$input->group_key === 'password' ? 'w-25':'w-100'}} "
-                                        value="{{ old($input->name) }}"
+                                        @if ($input->group_key !== 'password')
+                                            value="{{ old($input->name, $participant?->{$input->name}) }}"
+                                        @endif
                                         placeholder="{{ $input->placeholder_ja }}"
                                         data-placeholder-ja="{{ $input->placeholder_ja }}"
                                         data-placeholder-en="{{ $input->placeholder_en }}"
@@ -265,7 +299,10 @@
                                             type="text"
                                             name="{{ $secondInput->name }}"
                                             class="form-control js-language-input"
-                                            value="{{ old($secondInput->name) }}"
+                                            value="{{ old(
+                                                $secondInput->name,
+                                                $participant?->{$secondInput->name}
+                                            ) }}"
                                             placeholder="{{ $secondInput->placeholder_ja }}"
                                             data-placeholder-ja="{{ $secondInput->placeholder_ja }}"
                                             data-placeholder-en="{{ $secondInput->placeholder_en }}"
@@ -322,7 +359,10 @@
                                         value="{{ $option->value }}"
                                         class="join-type"
                                         data-price="{{ $option->amount }}"
-                                        {{ old('registration_fee') == $option->value ? 'checked' : '' }}
+                                        {{ old(
+                                            'registration_fee',
+                                            $participant?->participation_status
+                                        ) == $option->value ? 'checked' : '' }}
                                     >
 
                                     <span class="jp">{{ $option->label_ja }}</span>
@@ -395,9 +435,11 @@
                                         data-prices='@json(
                                             $option->prices->pluck("amount", "join_type_id")
                                         )'
-                                        {{ old('banquet_fee') == $option->value ? 'checked' : '' }}
+                                        {{ old(
+                                            'banquet_fee',
+                                            $participant?->banquet_status
+                                        ) == $option->value ? 'checked' : '' }}
                                     >
-
                                     <span class="jp">{{ $option->label_ja }}</span>
                                     <span class="en">{{ $option->label_en }}</span>
                                 </div>

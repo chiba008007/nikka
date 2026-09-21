@@ -7,6 +7,11 @@
 @stop
 
 @section('content')
+@if (session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
 <div class="table-responsive">
     <table id="participant-table" class="table table-bordered table-striped" >
         <thead>
@@ -22,6 +27,8 @@
                 <th>懇親会費</th>
                 <th>支払(参加費)</th>
                 <th>支払(懇親会費)</th>
+                <th>更新時間</th>
+                <th>講演受付番号</th>
             </tr>
             {{-- カラム別検索欄 --}}
             <tr class="column-search">
@@ -37,14 +44,32 @@
                 <th><input type="text" class="form-control form-control-sm" placeholder="懇親会費"></th>
                 <th><input type="text" class="form-control form-control-sm" placeholder="支払(参加費)"></th>
                 <th><input type="text" class="form-control form-control-sm" placeholder="支払(懇親会費)"></th>
+                <th><input type="text" class="form-control form-control-sm" placeholder="更新時間"></th>
+                <th><input type="text" class="form-control form-control-sm" placeholder="講演受付番号"></th>
             </tr>
         </thead>
         <tbody>
             @forelse ($lists as $participant)
                 <tr>
                     <td class="d-flex">
-                        <button class="form-control btn btn-primary">編集</button>
-                        <button class="form-control btn btn-danger ml-2">削除</button>
+                        <a href="{{ route('sanka.list.edit', $participant->id) }}"
+                            class="form-control btn btn-primary">
+                                編集
+                        </a>
+                        <form
+                            method="POST"
+                            action="{{ route('sanka.list.destroy', $participant->id) }}"
+                            class="ml-2"
+                            onsubmit="return confirm('削除してよろしいですか？');"
+                        >
+                            @csrf
+                            @method('DELETE')
+
+                            <button type="submit" class="form-control btn btn-danger">
+                                削除
+                            </button>
+                        </form>
+
                     </td>
                     @foreach ($headers as $header)
                         <td>
@@ -53,8 +78,18 @@
                     @endforeach
                     <td>{{ $displayValues[$participant->id]['participation_type'] ?? '' }}</td>
                     <td>{{ $displayValues[$participant->id]['banquet_type'] ?? '' }}</td>
-                    <td>{{ $displayValues[$participant->id]['participation_amount'] ?? '' }}円</td>
-                    <td>{{ $displayValues[$participant->id]['banquet_amount'] ?? '' }}円</td>
+                    @php
+                        $participationAmount = $displayValues[$participant->id]['participation_amount'] ?? '';
+                        $participationSearch = str_replace([',', '円'], '', $participationAmount);
+                        $banquetAmount = $displayValues[$participant->id]['banquet_amount'] ?? '';
+                        $banquetSearch = str_replace([',', '円'], '', $banquetAmount);
+                    @endphp
+                    <td data-search="{{ $participationSearch }} {{ $participationAmount }}">
+                        {{ $participationAmount }}円
+                    </td>
+                    <td data-search="{{ $banquetSearch }} {{ $banquetAmount }}">
+                        {{ $banquetAmount }}円
+                    </td>
                     <td>
                         <label class="mb-0">
                             <input
@@ -91,6 +126,10 @@
                             </span>
                         </label>
                     </td>
+                    <td>
+                       {{ $participant->updated_at }}
+                    </td>
+                    <td>No</td>
                 </tr>
             @empty
                 <tr>
