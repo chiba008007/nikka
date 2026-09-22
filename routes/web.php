@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\SankaFormController;
 use App\Http\Controllers\Admin\SankaListController;
 use App\Http\Controllers\Admin\SankaListCreateController;
 use App\Http\Controllers\Admin\ParticipantController;
+use App\Http\Controllers\Admin\SankaParticipantHistoryController;
 use Illuminate\Http\Request;
 
 /*
@@ -46,6 +47,7 @@ Route::middleware('auth')->group(function () {
 
     // 参加者一覧
     Route::get('/sanka/list', [SankaListController::class, 'list'])->name('sanka.list.index');
+    Route::get('/sanka/list/csv', [SankaListController::class, 'csv'])->name('sanka.list.csv');
     Route::get('/sanka/list/create', [SankaListController::class, 'create'])->name('sanka.list.create');
     // 参加者入力ページ
     Route::get('/sanka/list/create/form', [SankaListCreateController::class, 'editform'])->name('sanka.list.editform');
@@ -96,7 +98,8 @@ Route::middleware('auth')->group(function () {
     // Route::get('/sanka/list', [SankaController::class, 'list'])->name('sanka.list');
     // 講演一覧
     Route::get('/koen/list', [SankaListController::class, 'list'])->name('koen.list.index');
-
+    // 履歴
+    Route::get('/sanka/list/history', [SankaParticipantHistoryController::class, 'index'])->name('sanka.list.history');
 
     Route::post('/language', function (Request $request) {
         // 選択した言語をセッションへ保存する

@@ -66,6 +66,16 @@ class AppServiceProvider extends ServiceProvider
                     'icon'  => 'fas fa-fw fa-edit',
                 ]);
                 $event->menu->add([
+                    'text'  => __('sanka.title.csv'),
+                    'route'   => 'sanka.list.csv',
+                    'icon'  => 'fas fa-fw fa-download',
+                ]);
+                $event->menu->add([
+                    'text'  => __('sanka.title.history'),
+                    'route'   => 'sanka.list.history',
+                    'icon'  => 'fas fa-fw fa-history',
+                ]);
+                $event->menu->add([
                     'text'  => __('sanka.title.mailedit'),
                     'route'   => 'home.list.mail',
                     'icon'  => 'fas fa-fw fa-envelope',

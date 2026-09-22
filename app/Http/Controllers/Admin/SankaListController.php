@@ -13,6 +13,7 @@ use App\Models\SankaFormItem;
 use App\Services\SankaParticipantMailService;
 use App\Services\SankaParticipantListService;
 use App\Services\SankaParticipantPaymentService;
+use App\Services\SankaParticipantCsvService;
 
 class SankaListController extends Controller
 {
@@ -199,5 +200,13 @@ class SankaListController extends Controller
         return view('admin.sanka.editform', compact('lists'));
     }
 
+    /**
+     * CSVダウンロード
+     */
+    public function csv(
+        SankaParticipantCsvService $csvService
+    ) {
+        return $csvService->download();
 
+    }
 }

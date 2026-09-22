@@ -8,6 +8,8 @@ return [
         'create' => '参加者登録',
         'edit' => '参加者編集',
         'editform' => '登録フォーム',
+        'csv' => 'CSVダウンロード',
+        'history' => '変更履歴',
         'mailedit' => 'メール内容編集',
         ],
     'header' => [
@@ -17,6 +19,8 @@ return [
         'create' => '参加者登録',
         'edit' => '参加者編集',
         'editform' => '参加者登録フォーム編集',
+        'csv' => 'CSVダウンロード',
+        'history' => '変更履歴',
         'mailedit' => 'メール内容編集',
 
         ],
