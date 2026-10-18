@@ -127,6 +127,53 @@ class AppServiceProvider extends ServiceProvider
                     'route' => 'dashboard',
                     'icon'  => 'fas fa-fw fa-microphone',
                 ]);
+                $event->menu->add([
+                    'text'  => __('koen.title.editform'),
+                    'route' => 'dashboard',
+                    'icon'  => 'fas fa-fw fa-barcode',
+                    'submenu' => [
+                        [
+                            'text'  => 'ログインページ',
+                            'route' => 'koen.list.loginform',
+                            'icon'  => 'far fa-fw fa-circle',
+                        ],
+                        [
+                            'text'  => '講演申込ページ',
+                            'route' => 'koen.list.koenform',
+                            'icon'  => 'far fa-fw fa-circle',
+                        ],
+                        [
+                            'text'  => '著者/所属/原稿',
+                            'route' => 'koen.list.author',
+                            'icon'  => 'far fa-fw fa-square',
+                        ],
+                        [
+                            'text'  => '確認画面説明文',
+                            'route' => 'koen.list.confirm',
+                            'icon'  => 'far fa-fw fa-circle',
+                        ],
+                        [
+                            'text'  => '完了画面説明文',
+                            'route' => 'koen.list.finish',
+                            'icon'  => 'far fa-fw fa-circle',
+                        ],
+                        [
+                            'text'  => '講演申込編集ログイン',
+                            'route' => 'koen.edit.login',
+                            'icon'  => 'far fa-fw fa-circle',
+                        ],
+                        [
+                            'text'  => '要旨原稿ログイン',
+                            'route' => 'koen.manual.login',
+                            'icon'  => 'far fa-fw fa-circle',
+                        ],
+                        [
+                            'text'  => '要旨原稿登録フォーム',
+                            'route' => 'koen.manual.form',
+                            'icon'  => 'far fa-fw fa-square',
+                        ],
+                    ]
+                ]);
             }
         });
     }

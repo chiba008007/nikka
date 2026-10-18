@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\SankaListController;
 use App\Http\Controllers\Admin\SankaListCreateController;
 use App\Http\Controllers\Admin\ParticipantController;
 use App\Http\Controllers\Admin\SankaParticipantHistoryController;
+use App\Http\Controllers\Admin\KoenListController;
 use Illuminate\Http\Request;
 
 /*
@@ -94,12 +95,42 @@ Route::middleware('auth')->group(function () {
         [SankaListController::class, 'updatePaymentStatus']
     )->name('sanka.payment-status.update');
 
+    // 履歴
+    Route::get('/sanka/list/history', [SankaParticipantHistoryController::class, 'index'])->name('sanka.list.history');
 
     // Route::get('/sanka/list', [SankaController::class, 'list'])->name('sanka.list');
     // 講演一覧
     Route::get('/koen/list', [SankaListController::class, 'list'])->name('koen.list.index');
-    // 履歴
-    Route::get('/sanka/list/history', [SankaParticipantHistoryController::class, 'index'])->name('sanka.list.history');
+    // ログインフォーム
+    Route::get('/koen/list/loginform', [KoenListController::class, 'loginform'])->name('koen.list.loginform');
+    Route::post('/koen/list/loginform', [KoenListController::class, 'loginformUpdate'])->name('koen.list.loginform.update');
+    // 講演申込フォーム
+    Route::get('/koen/list/koenform', [KoenListController::class, 'koenform'])->name('koen.list.koenform');
+    Route::post('/koen/list/koenform', [KoenListController::class, 'koenformUpdate'])->name('koen.list.koenform.update');
+    // 講演著者
+    Route::get('/koen/list/author', [KoenListController::class, 'author'])->name('koen.list.author');
+    Route::post('/koen/list/author', [KoenListController::class, 'authorUpdate'])->name('koen.list.author.update');
+
+    // 確認画面説明文
+    Route::get('/koen/list/confirm', [KoenListController::class, 'confirm'])->name('koen.list.confirm');
+    Route::post('/koen/list/confirm', [KoenListController::class, 'confirmUpdate'])->name('koen.list.confirm.update');
+
+    // 完了画面
+    Route::get('/koen/list/finish', [KoenListController::class, 'finish'])->name('koen.list.finish');
+    Route::post('/koen/list/finish', [KoenListController::class, 'finishUpdate'])->name('koen.list.finish.update');
+
+    // 完了画面
+    Route::get('/koen/edit/login', [KoenListController::class, 'editlogin'])->name('koen.edit.login');
+    Route::post('/koen/edit/login', [KoenListController::class, 'editloginUpdate'])->name('koen.edit.login.update');
+
+    // 要旨原稿ログイン
+    Route::get('/koen/manual/login', [KoenListController::class, 'manuallogin'])->name('koen.manual.login');
+    Route::post('/koen/manual/login', [KoenListController::class, 'manualloginUpdate'])->name('koen.manual.login.update');
+
+    // 要旨原稿画面
+    Route::get('/koen/manual/form', [KoenListController::class, 'manualform'])->name('koen.manual.form');
+    Route::post('/koen/manual/form', [KoenListController::class, 'manualformUpdate'])->name('koen.manual.form.update');
+
 
     Route::post('/language', function (Request $request) {
         // 選択した言語をセッションへ保存する

@@ -12,6 +12,8 @@ class SankaFormItem extends Model
     protected $fillable = [
         'group_key',
         'name',
+        'explain_jp',
+        'explain_en',
         'label_ja',
         'label_en',
         'type',

@@ -152,15 +152,15 @@
                     </div>
                     <div class="section-title mt-3 en">
                         {{ $formItems[$titleKey]->label_en }}
-
                         @if ($formItems[$titleKey]->required_text ?? '')
                             <span class="required-label">
                                 {{ $formItems[$titleKey]->required_text_en }}
                             </span>
                         @endif
                     </div>
-
                     @if ($input)
+                        <div class="jp">{{$formItems[$inputKey]->explain_jp}}</div>
+                        <div class="en">{{$formItems[$inputKey]->explain_en}}</div>
                         <div class="form-row">
                             @if ($input->group_key === 'postcode')
                                 <div class="col-md-12">

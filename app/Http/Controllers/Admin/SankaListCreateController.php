@@ -69,6 +69,8 @@ class SankaListCreateController extends Controller
                 foreach ([
                     'group_key',
                     'type',
+                    'explain_jp',
+                    'explain_en',
                     'placeholder_ja',
                     'placeholder_en',
                     'error_message_ja',

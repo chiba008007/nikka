@@ -330,6 +330,7 @@
                                 <div>{{ $requiredmessage }}</div>
                             </div>
                         </div>
+
                         <div class="row">
                             <div class="col-12 d-flex">
                                 <input
@@ -344,6 +345,21 @@
                                     class="form-control ml-2"
                                     value="{{ old($titleKey . '.label_en', $form[$titleKey]->label_en ?? '') }}"
                                 >
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <label for="title">説明文{{$lang}}</label>
+                            <div class="col-12 d-flex">
+                                <textarea
+                                    name="{{ $key }}[explain_jp]"
+                                    class="form-control"
+                                    rows=4
+                                >{{ old($key . '.explain_jp', $form[$key]->explain_jp ?? '') }}</textarea>
+                                <textarea
+                                    name="{{ $key }}[explain_en]"
+                                    class="form-control ml-2"
+                                    rows=4
+                                >{{ old($key . '.explain_en', $form[$key]->explain_en ?? '') }}</textarea>
                             </div>
                         </div>
                         <div class="row mt-3">
