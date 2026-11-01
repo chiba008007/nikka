@@ -330,6 +330,12 @@ class SankaListCreateController extends Controller
             (int) $data['serial']
         )->first(array_merge(['id', 'reception_number'], $columns));
 
+        if ($participant) {
+            $request->session()->put('koen_participant_id', $participant->id);
+        } else {
+            $request->session()->forget('koen_participant_id');
+        }
+
         $values = [];
 
         if ($participant) {

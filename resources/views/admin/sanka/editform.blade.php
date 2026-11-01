@@ -607,9 +607,7 @@ $(function () {
      * 選択された件数まで選択肢入力欄を表示する
      */
     function changeOptionCount(index, count) {
-
         $('.option-item-' + index).each(function () {
-
             var optionNumber = Number($(this).data('option-number'));
 
             if (optionNumber <= count) {
@@ -617,6 +615,9 @@ $(function () {
             } else {
                 $(this).hide();
             }
+
+            // 選択数を超えた入力欄は送信しない
+            $(this).find('input').prop('disabled', optionNumber > count);
         });
     }
 

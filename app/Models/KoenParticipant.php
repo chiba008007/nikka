@@ -1,0 +1,42 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class KoenParticipant extends Model
+{
+    use HasFactory;
+    use SoftDeletes;
+
+    protected $table = 'koen_participants';
+
+    protected $fillable = [
+        'participant_id',
+        'koen_number',
+        'status',
+        'add_column_1', 'add_column_2', 'add_column_3',
+        'add_column_4', 'add_column_5', 'add_column_6',
+        'add_column_7', 'add_column_8', 'add_column_9',
+        'add_column_10', 'add_column_11', 'add_column_12',
+        'add_column_13', 'add_column_14', 'add_column_15',
+        'add_column_16', 'add_column_17', 'add_column_18',
+        'add_column_19', 'add_column_20', 'add_column_21',
+        'add_column_22', 'add_column_23', 'add_column_24',
+        'add_column_25', 'add_column_26', 'add_column_27',
+        'add_column_28', 'add_column_29', 'add_column_30',
+        'add_column_31', 'add_column_32', 'add_column_33',
+        'add_column_34', 'add_column_35', 'add_column_36',
+        'add_column_37', 'add_column_38', 'add_column_39',
+        'add_column_40', 'add_column_41', 'add_column_42',
+        'add_column_43', 'add_column_44', 'add_column_45',
+        'add_column_46', 'add_column_47', 'add_column_48',
+        'add_column_49', 'add_column_50',
+    ];
+
+    protected $casts = [
+        'status' => 'integer',
+    ];
+}

@@ -27,6 +27,7 @@
         <x-koen-regist-form
             :code="$code"
             :endai="$endai"
+            :koenFormItems="$koenFormItems"
         />
 
     </form>

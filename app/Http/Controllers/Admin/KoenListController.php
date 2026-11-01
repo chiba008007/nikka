@@ -10,6 +10,9 @@ use App\Models\KoenParticipantAuthorOption;
 use App\Models\Setting;
 use App\Models\SankaFormItem;
 use App\Services\SankaFormService;
+use App\Models\SankaParticipant;
+use App\Models\KoenParticipant;
+use Illuminate\Support\Facades\DB;
 
 class KoenListController extends Controller
 {
@@ -169,6 +172,7 @@ class KoenListController extends Controller
             // koen_participant_form を更新
             $form->update($values);
 
+            $form->options()->delete();
             // koen_participant_form_options を更新
             foreach ($options as $sortOrder => $option) {
 
@@ -188,7 +192,7 @@ class KoenListController extends Controller
                         'label_ja' => $labelJa,
                         'label_en' => $labelEn,
                         'value' => (string) $sortOrder,
-                        'status' => !empty($option['status']) ? 1 : 0,
+                        'status' => 1,
                     ]
                 );
             }
@@ -360,10 +364,104 @@ class KoenListController extends Controller
         ->orderByRaw('CAST(SUBSTRING(name, 6) AS UNSIGNED)')
         ->get()
         );
-        return view('admin.koen.registform', compact('form', 'code', 'endai'));
+
+
+        $koenFormItems = KoenParticipantForm::where('page_type', 'koenform')
+            ->where('status', 1)
+            ->where('name', 'regexp', '^add_column_([1-9]|[1-4][0-9]|50)$')
+            ->with(['options' => function ($query) {
+                $query->where('status', 1)
+                      ->orderBy('sort_order');
+            }])
+            ->orderBy('sort_order')
+            ->get();
+        $koenFormItems = $sankaFormService->formatLabels($koenFormItems);
+        return view(
+            'admin.koen.registform',
+            compact('form', 'code', 'endai', 'koenFormItems')
+        );
     }
+
+
     public function koenRegists(Request $request)
     {
-        dd($request);
+        $participantId = $request->session()->get('koen_participant_id');
+
+        if (!$participantId ||
+            !SankaParticipant::whereKey($participantId)->exists()) {
+            return back()
+                ->withErrors(['participant' => '参加者が確認できません。'])
+                ->withInput();
+        }
+
+        $items = KoenParticipantForm::where('page_type', 'koenform')
+            ->where('status', 1)
+            ->where('name', 'regexp', '^add_column_([1-9]|[1-4][0-9]|50)$')
+            ->get();
+
+        DB::transaction(function () use ($request, $participantId, $items) {
+            // 講演番号の設定を取得
+            $codes = $this->getKoenCodeSettings();
+
+            $prefix = $codes['koencode1'];
+            $suffix = $codes['koencode2'] . '-' . $codes['koencode3'];
+
+            // 最新の講演番号を取得
+            $lastNumber = DB::table('koen_participants')
+                ->where('koen_number', 'like', "{$prefix}%-{$suffix}")
+                ->orderByDesc('id')
+                ->value('koen_number');
+
+            $serial = 1;
+
+            if ($lastNumber !== null) {
+                $head = explode('-', $lastNumber, 2)[0];
+                $serial = (int) substr($head, strlen($prefix)) + 1;
+            }
+
+            $koenNumber = $prefix
+                . str_pad((string) $serial, 4, '0', STR_PAD_LEFT)
+                . '-' . $suffix;
+
+            $koen = new KoenParticipant();
+            $koen->participant_id = $participantId;
+            $koen->koen_number = $koenNumber;
+            $koen->status = 1;
+
+            foreach ($items as $item) {
+                $value = $request->input($item->name);
+
+                $koen->{$item->name} = is_array($value)
+                    ? json_encode($value, JSON_UNESCAPED_UNICODE)
+                    : $value;
+            }
+
+            $koen->save();
+        });
+
+        return back()->with('success', '登録しました。');
     }
+
+    /**
+     * 講演番号用の設定値を取得
+     */
+    private function getKoenCodeSettings(): array
+    {
+        $types = ['koencode1', 'koencode2', 'koencode3'];
+
+        $settings = Setting::whereIn('type', $types)
+            ->orderBy('type')
+            ->lockForUpdate()
+            ->pluck('name_ja', 'type')
+            ->all();
+
+        foreach ($types as $type) {
+            if (blank($settings[$type] ?? null)) {
+                throw new \RuntimeException("設定がありません: {$type}");
+            }
+        }
+
+        return $settings;
+    }
+
 }
