@@ -9,6 +9,7 @@ use App\Models\SankaFeeItem;
 use App\Models\SankaFeeOption;
 use App\Models\SankaFeeOptionPrice;
 use App\Services\SankaFeeService;
+use App\Models\SankaParticipant;
 use Illuminate\Support\Facades\DB;
 
 class SankaListCreateController extends Controller
@@ -97,6 +98,11 @@ class SankaListCreateController extends Controller
                 if (str_starts_with($key, 'add_column_')) {
                     $updateData['required'] = isset($data['required']) ? 1 : 0;
                     $updateData['column'] = isset($data['column']) ? 2 : 1;
+                }
+                // title1 ～ title50 の演題登録画面表示フラグ
+                if (preg_match('/^title([1-9]|[1-4][0-9]|50)$/', $key)) {
+                    $updateData['endai_regist_flag'] =
+                        isset($data['endai_regist_flag']) ? 1 : 0;
                 }
 
                 // 本体更新
@@ -266,6 +272,99 @@ class SankaListCreateController extends Controller
             ->back()
             ->with('success', '更新しました。');
     }
+
+    /**
+     * ajaxで参加者情報を取得
+     */
+
+    public function searchParticipant(Request $request)
+    {
+        $data = $request->validate([
+            'serial' => 'required|digits:4',
+        ]);
+
+        // 演題登録画面の表示対象
+        $titles = SankaFormItem::where('endai_regist_flag', 1)
+            ->pluck('name')
+            ->flip();
+
+        $inputs = SankaFormItem::where('name', 'like', 'add_column_%')
+            ->with(['options' => fn ($query) => $query->where('status', 1)])
+            ->get(['id', 'name', 'column', 'group_key'])
+            ->keyBy('name');
+
+        $groups = [];
+
+        for ($i = 1; $i <= 50; $i++) {
+            if (!$titles->has('title' . $i)) {
+                continue;
+            }
+
+            $input = $inputs->get('add_column_' . $i);
+
+            if (!$input || $input->group_key === 'password') {
+                continue;
+            }
+
+            $group = [$input->name];
+
+            $titleKey = 'title' . $i;
+
+            // 2分割の場合は次のカラムと結合する
+            if ((int) $input->column === 2 && $i < 50) {
+                $next = $inputs->get('add_column_' . ($i + 1));
+
+                if ($next && $next->group_key !== 'password') {
+                    $group[] = $next->name;
+                    $i++;
+                }
+            }
+
+            $groups[$titleKey] = $group;
+        }
+
+        $columns = collect($groups)->flatten()->unique()->all();
+
+        $participant = SankaParticipant::where(
+            'reception_serial',
+            (int) $data['serial']
+        )->first(array_merge(['id', 'reception_number'], $columns));
+
+        $values = [];
+
+        if ($participant) {
+            foreach ($groups as $titleKey => $group) {
+                $ja = '';
+                $en = '';
+
+                foreach ($group as $name) {
+                    $raw = (string) ($participant->{$name} ?? '');
+                    $input = $inputs->get($name);
+
+                    $option = $input?->group_key === 'radio'
+                        ? $input->options->firstWhere('value', $raw)
+                        : null;
+
+                    $ja .= $option?->label_ja ?? $raw;
+                    $en .= $option?->label_en ?? $raw;
+                }
+
+                $values[$titleKey] = [
+                    'ja' => $ja,
+                    'en' => $en,
+                ];
+            }
+        }
+
+        return response()->json([
+            'participant' => $participant ? [
+                'id' => $participant->id,
+                'reception_number' => $participant->reception_number,
+                'values' => $values,
+            ] : null,
+        ]);
+    }
+
     /**
      * 参加者登録確認フォーム編集
      */

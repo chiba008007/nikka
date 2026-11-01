@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\SankaFeeItem;
 use App\Models\SankaFormItem;
+use Illuminate\Support\Collection;
 
 class SankaFormService
 {
@@ -21,27 +22,7 @@ class SankaFormService
                 },
             ])
             ->orderBy('sort_order')
-            ->get()
-            ->map(function ($item) {
-                // []内の文字を取得する
-                preg_match('/\[([^\]]+)\]/u', $item->label_ja, $matches);
-                preg_match('/\[([^\]]+)\]/u', $item->label_en, $matchesen);
-
-                // []内の文字を別キーに保持する
-                $item->required_text = $matches[1] ?? '';
-                $item->required_text_en = $matchesen[1] ?? '';
-
-                // []部分を表示文字から除去する
-                $item->label_ja = trim(
-                    preg_replace('/\[[^\]]*\]/u', '', $item->label_ja)
-                );
-                $item->label_en = trim(
-                    preg_replace('/\[[^\]]*\]/u', '', $item->label_en)
-                );
-
-                return $item;
-            })
-            ->keyBy('name');
+            ->get();
 
 
         // 参加費関連を3テーブルまとめて取得する
@@ -59,33 +40,36 @@ class SankaFormService
                 },
             ])
             ->orderBy('sort_order')
-            ->get()
-            ->map(function ($item) {
-                // []内の文字を取得する
-                preg_match('/\[([^\]]+)\]/u', $item->label_ja, $matches);
-                preg_match('/\[([^\]]+)\]/u', $item->label_en, $matchesen);
+            ->get();
 
-                // []内の文字を別キーに保持する
-                $item->required_text = $matches[1] ?? '';
-                $item->required_text_en = $matchesen[1] ?? '';
-
-                // []部分を表示文字から除去する
-                $item->label_ja = trim(
-                    preg_replace('/\[[^\]]*\]/u', '', $item->label_ja)
-                );
-                $item->label_en = trim(
-                    preg_replace('/\[[^\]]*\]/u', '', $item->label_en)
-                );
-
-                return $item;
-            })
-            ->keyBy('name');
-
-
+        $formItems = $this->formatLabels($formItems);
+        $feeItems = $this->formatLabels($feeItems);
         return [
             'formItems' => $formItems,
             'feeItems' => $feeItems,
         ];
     }
+    public function formatLabels(Collection $items): Collection
+    {
+        return $items->map(function ($item) {
+            foreach (['ja', 'en'] as $lang) {
+                $field = 'label_' . $lang;
+                $text = $item->{$field} ?? '';
 
+                preg_match('/\[([^\]]+)\]/u', $text, $matches);
+
+                $requiredField = $lang === 'ja'
+                    ? 'required_text'
+                    : 'required_text_en';
+
+                $item->{$requiredField} = $matches[1] ?? '';
+
+                $item->{$field} = trim(
+                    preg_replace('/\[[^\]]*\]/u', '', $text)
+                );
+            }
+
+            return $item;
+        })->keyBy('name');
+    }
 }

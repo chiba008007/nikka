@@ -5,10 +5,12 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\SankaFormController;
 use App\Http\Controllers\Admin\SankaListController;
+use App\Http\Controllers\Admin\SankaListRegistController;
 use App\Http\Controllers\Admin\SankaListCreateController;
 use App\Http\Controllers\Admin\ParticipantController;
 use App\Http\Controllers\Admin\SankaParticipantHistoryController;
 use App\Http\Controllers\Admin\KoenListController;
+use App\Http\Controllers\Admin\SettingController;
 use Illuminate\Http\Request;
 
 /*
@@ -38,6 +40,8 @@ Route::get('/home/list', function () {
 })->middleware(['auth', 'verified'])->name('home.list');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/setting', [SettingController::class, 'index'])->name('home.list.setting');
+    Route::post('/setting/edit', [SettingController::class, 'edit'])->name('home.list.setting.edit');
     Route::get('/home/list/mail', [MailEditController::class, 'edit'])->name('home.list.mail');
     Route::post('/home/list/mail', [MailEditController::class, 'update'])->name('home.list.mail.update');
 
@@ -101,6 +105,12 @@ Route::middleware('auth')->group(function () {
     // Route::get('/sanka/list', [SankaController::class, 'list'])->name('sanka.list');
     // 講演一覧
     Route::get('/koen/list', [SankaListController::class, 'list'])->name('koen.list.index');
+    // 講演登録
+    Route::get('/koen/list/regist', [KoenListController::class, 'regist'])->name('koen.list.regist');
+    Route::post('/koen/list/regist/koenRegists', [KoenListController::class, 'koenRegists'])->name('koen.list.regist.koenRegists');
+
+    Route::get('/koen/participant/search', [SankaListCreateController::class, 'searchParticipant'])->name('koen.participant.search');
+
     // ログインフォーム
     Route::get('/koen/list/loginform', [KoenListController::class, 'loginform'])->name('koen.list.loginform');
     Route::post('/koen/list/loginform', [KoenListController::class, 'loginformUpdate'])->name('koen.list.loginform.update');

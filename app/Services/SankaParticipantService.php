@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use RuntimeException;
 use App\Models\SankaFormItem;
+use App\Models\Setting;
 
 class SankaParticipantService
 {
@@ -156,9 +157,18 @@ class SankaParticipantService
      */
     private function createReceptionNumber(int $serial): string
     {
+        $code = Setting::whereIn('type', [
+            'sankacode1',
+            'sankacode2',
+            'sankacode3',
+        ])->pluck('name_ja', 'type');
+
         return sprintf(
-            config('app.sanka_reception_number_format'),
-            $serial
+            '%s%04d-%s-%s',
+            $code['sankacode1'],
+            $serial,
+            $code['sankacode2'],
+            $code['sankacode3']
         );
     }
 

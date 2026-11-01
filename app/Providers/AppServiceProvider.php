@@ -27,19 +27,30 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(BuildingMenu::class, function (BuildingMenu $event) {
 
             // dashboard
-            if (request()->routeIs('home.*')) {
+            if (request()->routeIs('dashboard', 'dashboard.*', 'home.*')) {
+
+                $event->menu->add([
+                    'text' => '設定',
+                    'route' => 'home.list.setting',
+                    'icon' => 'fas fa-fw fa-cog',
+                ]);
 
                 $event->menu->add([
                     'text'  => __('sanka.title.list'),
                     'route' => 'sanka.list.index',
                     'icon'  => 'fas fa-fw fa-user',
                 ]);
-
+                $event->menu->add([
+                    'text'  => '講演一覧',
+                    'route' => 'koen.list.index',
+                    'icon'  => 'fas fa-fw fa-microphone',
+                ]);
                 $event->menu->add([
                     'text'  => __('sanka.title.mailedit'),
                     'route' => 'home.list.mail',
                     'icon'  => 'fas fa-fw fa-envelope',
                 ]);
+
 
             }
             // 参加管理画面
@@ -113,10 +124,8 @@ class AppServiceProvider extends ServiceProvider
                         ],
                     ],
                 ]);
-            }
-
-            // 講演管理画面
-            if (request()->routeIs('koen.*')) {
+            } elseif // 講演管理画面
+            (request()->routeIs('koen.*')) {
 
                 $event->menu->add([
                     'header' => '講演管理',
@@ -124,8 +133,13 @@ class AppServiceProvider extends ServiceProvider
 
                 $event->menu->add([
                     'text'  => '講演一覧',
-                    'route' => 'dashboard',
+                    'route' => 'koen.list.index',
                     'icon'  => 'fas fa-fw fa-microphone',
+                ]);
+                $event->menu->add([
+                    'text'  => '講演登録',
+                    'route' => 'koen.list.regist',
+                    'icon'  => 'fas fa-fw fa-id-card',
                 ]);
                 $event->menu->add([
                     'text'  => __('koen.title.editform'),

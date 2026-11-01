@@ -11,6 +11,7 @@
 @php
     $enable = "有効";
     $listDisplay = "一覧表示";
+    $koenDisplay = "講演登録画面";
     $required = "必須";
     $column = "2分割";
     $enablemessage = "「有効」を選択すると、この項目が画面に表示されます。";
@@ -27,14 +28,16 @@
     $groupKeyArray = ['text','radio','select','checkbox','postcode','address','mail','mailcheck','password','textarea' ];
     $othermessage = "備考説明文";
 @endphp
+
 @section('content')
     <form method="POST" action="{{ route('sanka.list.editform.update') }}">
         {{-- CSRF対策 --}}
         @csrf
         @method('PUT')
-        <button type="submit" class="btn btn-primary mb-2 w-100">
+        <button type="submit" class="btn btn-primary mb-2 w-100 sticky-save">
             保存
         </button>
+        @include('layouts.flash-message')
         <div class="card">
             <div class="card-body">
                 {{-- タイトル --}}
@@ -327,6 +330,15 @@
                                     >
                                     {{ $listDisplay }}
                                 </label>
+                                <label class="mb-0 pb-0">
+                                    <input
+                                        type="checkbox"
+                                        name="{{ $titleKey }}[endai_regist_flag]"
+                                        value="1"
+                                        {{ old($titleKey . '.endai_regist_flag', $form[$titleKey]->endai_regist_flag ?? 0) ? 'checked' : '' }}
+                                    >
+                                    {{ $koenDisplay }}
+                                </label>
                                 <div>{{ $requiredmessage }}</div>
                             </div>
                         </div>
@@ -562,7 +574,6 @@ $(function () {
      */
     function changeTypeDisplay(index) {
         var value = $('.group-key-radio[data-index="' + index + '"]:checked').val();
-        console.log(value);
         if (value === 'radio' || value === 'select' || value === 'checkbox' ) {
             $('#type-row-' + index).hide();
             $('#text-option-' + index).hide();
@@ -630,4 +641,13 @@ $(function () {
 
 });
 </script>
+@stop
+@section('css')
+<style>
+.sticky-save {
+    position: sticky;
+    top: 10px;
+    z-index: 1030;
+}
+</style>
 @stop

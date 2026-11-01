@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use App\Models\KoenParticipantForm;
 use App\Services\KoenFormService;
 use App\Models\KoenParticipantAuthorOption;
+use App\Models\Setting;
+use App\Models\SankaFormItem;
+use App\Services\SankaFormService;
 
 class KoenListController extends Controller
 {
@@ -185,7 +188,7 @@ class KoenListController extends Controller
                         'label_ja' => $labelJa,
                         'label_en' => $labelEn,
                         'value' => (string) $sortOrder,
-                        'status' => 1,
+                        'status' => !empty($option['status']) ? 1 : 0,
                     ]
                 );
             }
@@ -337,5 +340,30 @@ class KoenListController extends Controller
         return redirect()
             ->route('koen.manual.form')
             ->with('success', '更新しました。');
+    }
+
+
+    //
+    public function regist(SankaFormService $sankaFormService)
+    {
+        $form = [];
+        $code = Setting::get()->keyBy('type');
+        // 演題登録画面表示用入力フォーム
+        $endai = $sankaFormService->formatLabels(
+            SankaFormItem::where('endai_regist_flag', 1)
+        ->whereNotIn('name', function ($query) {
+            $query->selectRaw("CONCAT('title', SUBSTRING(name, 12))")
+                ->from('sanka_form_items')
+                ->where('group_key', 'password')
+                ->where('name', 'like', 'add_column_%');
+        })
+        ->orderByRaw('CAST(SUBSTRING(name, 6) AS UNSIGNED)')
+        ->get()
+        );
+        return view('admin.koen.registform', compact('form', 'code', 'endai'));
+    }
+    public function koenRegists(Request $request)
+    {
+        dd($request);
     }
 }

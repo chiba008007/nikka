@@ -168,6 +168,7 @@
                     <div class="col-4">
 
                         <label class="mb-0 pb-0">
+                            <input type="hidden" name="{{ $key }}[status]" value="0">
                             <input
                                 type="checkbox"
                                 name="{{ $key }}[status]"
@@ -178,6 +179,7 @@
                         </label>
 
                         <label class="mb-0 pb-0">
+                            <input type="hidden" name="{{ $key }}[list_display]" value="0">
                             <input
                                 type="checkbox"
                                 name="{{ $key }}[list_display]"
@@ -228,6 +230,7 @@
                     <div class="col-12 d-flex">
 
                         <label class="ml-2">
+                            <input type="hidden" name="{{ $key }}[required]" value="0">
                             <input
                                 type="checkbox"
                                 name="{{ $key }}[required]"
@@ -237,6 +240,7 @@
                         </label>
 
                         <label class="ml-2">
+                            <input type="hidden" name="{{ $key }}[column]" value="1">
                             <input
                                 type="checkbox"
                                 name="{{ $key }}[column]"
