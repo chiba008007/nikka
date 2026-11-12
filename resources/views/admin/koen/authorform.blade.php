@@ -478,7 +478,10 @@
                             >
                     </div>
                 </div>
-
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
                 <div class="row mt-1">
                     <div class="col-6">
                         <label class="mb-0">備考{{ config('const.lang') }}</label>

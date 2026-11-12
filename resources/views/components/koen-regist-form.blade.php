@@ -1,14 +1,10 @@
-<style>
-  .required-label {
-    margin-left: 6px;
-    color: #dc3545;
-    font-size: 13px;
-  }
-</style>
+
 @props([
     'code',
     'endai',
     'koenFormItems',
+    'description',
+    'authorOptions'
 ])
 
 <div class="card">
@@ -26,7 +22,7 @@
 
                   <div class="d-flex ml-5">
                     <span class="pt-2">{{ $code['sankacode1']->name_ja }}</span>
-                    <input type="text" id="reception_number" value="" class="form-control" placeholder="例)0001" />
+                    <input type="text" id="reception_number" name="reception_number" value="{{ old('reception_number') }}" class="form-control" placeholder="例)0001" />
                   </div>
                   <div class="pt-2"> - {{ $code['sankacode2']->name_ja }} - </div>
                   <div class="pt-2">{{ $code['sankacode3']->name_ja }}</div>
@@ -168,6 +164,261 @@
                 </div>
             </div>
         @endforeach
+
+        @if ($description)
+            <div class="jp">{!! $description->note_ja !!}</div>
+            <div class="en">{!! $description->note_en !!}</div>
+        @endif
+
+        <!-- 著者の所属機関 -->
+
+        @php
+            $labels = $authorOptions->keyBy('type');
+            $note = fn ($key, $lang = 'ja') =>
+                $labels->get($key)?->getAttribute('note_' . $lang) ?? '';
+
+            $maxCount = 10;
+            $affCount = min($maxCount, max(1, (int) old('affiliation_count', 1)));
+            $authorCount = min($maxCount, max(1, (int) old('author_count', 1)));
+        @endphp
+
+        <div id="koen-author-ui" class="mt-4">
+
+            {{-- 著者の所属機関 --}}
+            <h5 class="koen-section-title">
+                <span class="jp">{{ $note('author_title') }}</span>
+                <span class="en">{{ $note('author_title', 'en') }}</span>
+            </h5>
+
+            <div class="koen-count">
+                <label for="affiliation-count">
+                    <span class="jp">
+                        {{ preg_replace('/[0-9]+$/u', '', $note('author_count')) }}
+                    </span>
+                    <span class="en">{{ $note('author_count', 'en') }}</span>
+                </label>
+
+                <select id="affiliation-count"
+                        name="affiliation_count"
+                        class="form-control form-control-sm">
+                    @for ($i = 1; $i <= $maxCount; $i++)
+                        <option value="{{ $i }}" @selected($affCount === $i)>
+                            {{ $i }}
+                        </option>
+                    @endfor
+                </select>
+            </div>
+
+            <div class="koen-explain">
+                <div class="jp">{{ $note('author_explain') }}</div>
+                <div class="en">{{ $note('author_explain', 'en') }}</div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered koen-input-table">
+                    <colgroup>
+                        <col style="width: 4%">
+                        <col style="width: 32%">
+                        <col style="width: 32%">
+                        <col style="width: 32%">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            @foreach ([
+                                'author_number',
+                                'author_kikan',
+                                'author_ryaku',
+                                'author_english'
+                            ] as $key)
+                                <th>
+                                    <span class="jp">{{ $note($key) }}</span>
+                                    <span class="en">{{ $note($key, 'en') }}</span>
+                                </th>
+                            @endforeach
+                        </tr>
+                    </thead>
+
+                    <tbody id="affiliation-rows">
+                        @for ($i = 1; $i <= $maxCount; $i++)
+                            <tr>
+                                <td class="text-center">{{ $i }}</td>
+
+                                <td>
+                                    <input type="text"
+                                        name="affiliations[{{ $i }}][organization]"
+                                        class="form-control form-control-sm mb-1 js-language-input"
+                                        value="{{ old("affiliations.$i.organization") }}"
+                                        placeholder="{{ $note('author_kikan_placeholder') }}"
+                                        data-placeholder-ja="{{ $note('author_kikan_placeholder') }}"
+                                        data-placeholder-en="{{ $note('author_kikan_placeholder', 'en') }}">
+
+                                    <input type="text"
+                                        name="affiliations[{{ $i }}][department]"
+                                        class="form-control form-control-sm js-language-input"
+                                        value="{{ old("affiliations.$i.department") }}"
+                                        placeholder="{{ $note('author_kikan_gakubu_placeholder') }}"
+                                        data-placeholder-ja="{{ $note('author_kikan_gakubu_placeholder') }}"
+                                        data-placeholder-en="{{ $note('author_kikan_gakubu_placeholder', 'en') }}">
+                                </td>
+
+                                <td>
+                                    <input type="text"
+                                        name="affiliations[{{ $i }}][short_name]"
+                                        class="form-control form-control-sm js-language-input"
+                                        value="{{ old("affiliations.$i.short_name") }}"
+                                        placeholder="{{ $note('author_ryaku_placeholder') }}"
+                                        data-placeholder-ja="{{ $note('author_ryaku_placeholder') }}"
+                                        data-placeholder-en="{{ $note('author_ryaku_placeholder', 'en') }}">
+                                </td>
+
+                                <td>
+                                    <input type="text"
+                                        name="affiliations[{{ $i }}][english]"
+                                        class="form-control form-control-sm mb-1 js-language-input"
+                                        value="{{ old("affiliations.$i.english") }}"
+                                        placeholder="{{ $note('author_english_placeholder') }}"
+                                        data-placeholder-ja="{{ $note('author_english_placeholder') }}"
+                                        data-placeholder-en="{{ $note('author_english_placeholder', 'en') }}">
+
+                                    <input type="text"
+                                        name="affiliations[{{ $i }}][english_short]"
+                                        class="form-control form-control-sm js-language-input"
+                                        value="{{ old("affiliations.$i.english_short") }}"
+                                        placeholder="{{ $note('author_english_ryaku_placeholder') }}"
+                                        data-placeholder-ja="{{ $note('author_english_ryaku_placeholder') }}"
+                                        data-placeholder-en="{{ $note('author_english_ryaku_placeholder', 'en') }}">
+                                </td>
+                            </tr>
+                        @endfor
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- 著者名 --}}
+            <h5 class="koen-section-title mt-4">
+                <span class="jp">{{ $note('author_name') }}</span>
+                <span class="en">{{ $note('author_name', 'en') }}</span>
+            </h5>
+
+            <div class="koen-count">
+                <label for="author-count">
+                    <span class="jp">{{ $note('author_name_count') }}</span>
+                    <span class="en">{{ $note('author_name_count', 'en') }}</span>
+                </label>
+
+                <select id="author-count"
+                        name="author_count"
+                        class="form-control form-control-sm">
+                    @for ($i = 1; $i <= $maxCount; $i++)
+                        <option value="{{ $i }}" @selected($authorCount === $i)>
+                            {{ $i }}
+                        </option>
+                    @endfor
+                </select>
+            </div>
+
+            <div class="koen-explain mt-3">
+                <div class="jp">{!! $note('author_name_explain') !!}</div>
+                <div class="en">{!! $note('author_name_explain', 'en') !!}</div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered koen-input-table">
+                    <colgroup>
+                        <col style="width: 5%">
+                        <col style="width: 9%">
+                        <col style="width: 32%">
+                        <col style="width: 32%">
+                        <col style="width: 22%">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            @foreach ([
+                                'author_speak',
+                                'author_contact',
+                                'author_speak_ja',
+                                'author_speak_en',
+                                'author_connect_number'
+                            ] as $key)
+                                <th>
+                                    <span class="jp">{{ $note($key) }}</span>
+                                    <span class="en">{{ $note($key, 'en') }}</span>
+                                </th>
+                            @endforeach
+                        </tr>
+                    </thead>
+
+                    <tbody id="author-rows">
+                        @for ($i = 1; $i <= $maxCount; $i++)
+                            <tr>
+                                <td class="text-center">
+                                    <input type="radio"
+                                        name="presenter_index"
+                                        value="{{ $i }}"
+                                        @checked((int) old('presenter_index', 1) === $i)>
+                                </td>
+
+                                <td class="text-center">
+                                    <input type="radio"
+                                        name="award_contact_index"
+                                        value="{{ $i }}"
+                                        @checked((int) old('award_contact_index', 0) === $i)>
+                                </td>
+
+                                <td>
+                                    <div class="koen-name-inputs">
+                                        <input type="text"
+                                            name="authors[{{ $i }}][family_name_ja]"
+                                            class="form-control form-control-sm"
+                                            value="{{ old("authors.$i.family_name_ja") }}"
+                                            placeholder="姓">
+
+                                        <input type="text"
+                                            name="authors[{{ $i }}][given_name_ja]"
+                                            class="form-control form-control-sm"
+                                            value="{{ old("authors.$i.given_name_ja") }}"
+                                            placeholder="名">
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="koen-name-inputs">
+                                        <input type="text"
+                                            name="authors[{{ $i }}][given_name_en]"
+                                            class="form-control form-control-sm"
+                                            value="{{ old("authors.$i.given_name_en") }}"
+                                            placeholder="Given name">
+
+                                        <input type="text"
+                                            name="authors[{{ $i }}][family_name_en]"
+                                            class="form-control form-control-sm"
+                                            value="{{ old("authors.$i.family_name_en") }}"
+                                            placeholder="Family name">
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <input type="text"
+                                        name="authors[{{ $i }}][affiliation_numbers]"
+                                        class="form-control form-control-sm"
+                                        value="{{ old("authors.$i.affiliation_numbers") }}"
+                                        placeholder="例)1,2">
+                                </td>
+                            </tr>
+                        @endfor
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="jp">
+            {!! $authorOptions->get('author_other')->note_ja !!}
+        </div>
+        <div class="en">
+            {!! $authorOptions->get('author_other')->note_en !!}
+        </div>
+        <textarea class="form-control" name="othertext">{{ old('othertext') }}</textarea>
+
+
     </div>
 </div>
 
@@ -175,6 +426,9 @@
 @vite(['resources/js/app.js'])
 <script>
 $(function () {
+    if ($('#reception_number').val()) {
+        $('#reception_number').trigger('input');
+    }
     initSummernote('.description', 40);
 
     // 説明文をリッチテキストエディタにする
@@ -216,6 +470,11 @@ $(function () {
         });
     });
 
+    // 登録後、復元された参加受付番号でデータを再取得
+    if ($('#reception_number').val().trim()) {
+        $('#reception_number').trigger('input');
+    }
+
     function updateEnabledFields() {
       $('.koen-form-item').each(function () {
           const $row = $(this);
@@ -242,7 +501,122 @@ $(function () {
     $(document).on('change', '.koen-form-item :input', updateEnabledFields);
     updateEnabledFields();
 
+
+    function setupCount(selectId, tbodyId) {
+        const select = document.getElementById(selectId);
+        const tbody = document.getElementById(tbodyId);
+
+        if (!select || !tbody) return;
+
+        function updateRows() {
+            const count = Number(select.value);
+
+            Array.from(tbody.rows).forEach((row, index) => {
+                const visible = index < count;
+
+                row.hidden = !visible;
+
+                row.querySelectorAll('input').forEach(input => {
+                    input.disabled = !visible;
+                });
+            });
+        }
+
+        select.addEventListener('change', updateRows);
+        updateRows();
+    }
+
+    setupCount('affiliation-count', 'affiliation-rows');
+    setupCount('author-count', 'author-rows');
+
 });
 
 </script>
 @stop
+<style>
+    .required-label {
+        margin-left: 6px;
+        color: #dc3545;
+        font-size: 13px;
+    }
+
+    #koen-author-ui {
+        font-size: 13px;
+    }
+
+    #koen-author-ui .koen-section-title {
+        font-size: 14px;
+        font-weight: bold;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 4px;
+        margin-bottom: 8px;
+    }
+
+    #koen-author-ui .koen-count {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 5px;
+    }
+
+    #koen-author-ui .koen-count label {
+        margin: 0;
+    }
+
+    #koen-author-ui .koen-count select {
+        width: 95px;
+        height: 25px;
+        padding: 2px 5px;
+    }
+
+    #koen-author-ui .koen-explain {
+        white-space: pre-line;
+        margin-bottom: 8px;
+        line-height: 1.5;
+    }
+
+    #koen-author-ui .koen-input-table {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+        font-size: 12px;
+    }
+
+    #koen-author-ui .koen-input-table th {
+        background: #f4f4f8;
+        text-align: center;
+        vertical-align: middle;
+        padding: 7px 4px;
+        border: 1px solid #ccc;
+        overflow-wrap: anywhere;
+    }
+
+    #koen-author-ui .koen-input-table td {
+        padding: 4px;
+        vertical-align: middle;
+        border: 1px solid #ccc;
+    }
+
+    #koen-author-ui .koen-input-table .form-control {
+        width: 100%;
+        min-width: 0;
+        height: 27px;
+        font-size: 12px;
+        border-radius: 0;
+    }
+
+    #koen-author-ui .koen-name-inputs {
+        display: flex;
+        gap: 4px;
+    }
+
+    #koen-author-ui .koen-name-inputs input {
+        flex: 1;
+        width: 0;
+    }
+
+    #koen-author-ui tbody tr[hidden] {
+        display: none !important;
+    }
+
+</style>

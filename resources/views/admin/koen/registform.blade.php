@@ -17,7 +17,7 @@
         {{ session('success') }}
     </div>
 @endif
-    <form method="POST" action="{{ route('koen.list.regist.koenRegists') }}">
+    <form method="POST" action="{{ route('koen.list.regist.koenRegists') }}" enctype="multipart/form-data">
 
         {{-- CSRF対策 --}}
         @csrf
@@ -28,7 +28,62 @@
             :code="$code"
             :endai="$endai"
             :koenFormItems="$koenFormItems"
+            :description="$description"
+            :authorOptions="$authorOptions"
         />
+
+        <div class="card">
+            <div class="card-body">
+
+                <div class="jp">
+                    {!! $authorOptions->get('author_draft')->note_ja !!}
+                </div>
+                <div class="en">
+                    {!! $authorOptions->get('author_draft')->note_en !!}
+                </div>
+
+                <div class="mt-3">
+                    @for ($i = 1; $i <= 3; $i++)
+                        <div class="mb-3">
+                            <input
+                                type="file"
+                                name="uploadfile{{ $i }}"
+                                class="form-control">
+                        </div>
+                    @endfor
+                </div>
+
+                <div class="mt-3">
+                    <label>事務局用</label>
+                    <div class="d-flex align-items-center">
+                        <label class="mr-2">発表番号</label>
+                        <input
+                            type="text"
+                            name="announcenumber"
+                            class="form-control"
+                            style="max-width: 250px;"
+                            value="{{ old('announcenumber') }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-3">
+            <label class="mr-4">
+                <input type="checkbox"
+                    name="presentation_mail"
+                    value="1"
+                    @checked(old('presentation_mail'))>
+                講演内容メール
+            </label>
+
+            <label>
+                <input type="checkbox"
+                    name="manuscript_mail"
+                    value="1"
+                    @checked(old('manuscript_mail'))>
+                予行原稿メール
+            </label>
+        </div>
 
     </form>
 @stop

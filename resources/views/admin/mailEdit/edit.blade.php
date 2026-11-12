@@ -9,7 +9,7 @@
 @section('content')
 
 <div class="row">
-  <div class="col-6">
+  <div class="col-12">
       <div class="card p-3">
           <h4>{{ __('sanka.header.mailedit') }}</h4>
 
@@ -79,10 +79,20 @@
   </div>
   <div class="col-6">
     <div class="card p-3">
-      <div class="d-flex">
-        <h4>置き換え</h4>
+      <div >
+        <h4>参加者置き換え</h4>
         <span class="mt-2 ml-2">メール内容に貼付けしてください。</span>
       </div>
+        @foreach (config('const.MAIL_REPLACE_SANKA', []) as $key => $label)
+            <div class="mt-2">
+                <b>{{ $label }}</b>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    ##{{ $key }}##
+                </div>
+            </div>
+        @endforeach
         @for ($i = 1; $i <= 50; $i++)
             @php
                 $title = $sankaFormItem['title' . $i] ?? null;
@@ -107,6 +117,57 @@
                         @if ($nextColumn)
                             <div class="col-8">
                                 ##{{ $nextColumn->name }}##
+                            </div>
+                        @endif
+
+                        @php
+                            $i++;
+                        @endphp
+                    @endif
+                </div>
+            @endif
+        @endfor
+    </div>
+  </div>
+  <div class="col-6">
+    <div class="card p-3">
+      <div >
+        <h4>講演置き換え</h4>
+        <span class="mt-2 ml-2">メール内容に貼付けしてください。</span>
+      </div>
+        @foreach (config('const.MAIL_REPLACE_KOEN', []) as $key => $label)
+            <div class="mt-2">
+                <b>{{ $label }}</b>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    ##{{ $key }}##
+                </div>
+            </div>
+        @endforeach
+        @for ($i = 1; $i <= 50; $i++)
+            @php
+                $column = $koenFormItems['add_column_' . $i] ?? null;
+            @endphp
+
+            @if ($column)
+                <div class="mt-2">
+                    <b>{{ $column->label_ja }}</b>
+                </div>
+
+                <div class="row">
+                    <div class="{{ $column->column == 2 ? 'col-4' : 'col-12' }}">
+                        ##{{ str_replace('add_column_', 'add_koen_', $column->name) }}##
+                    </div>
+
+                    @if ($column->column == 2)
+                        @php
+                            $nextColumn = $koenFormItems['add_column_' . ($i + 1)] ?? null;
+                        @endphp
+
+                        @if ($nextColumn)
+                            <div class="col-8">
+                                ##{{ str_replace('add_column_', 'add_koen_', $nextColumn->name) }}##
                             </div>
                         @endif
 

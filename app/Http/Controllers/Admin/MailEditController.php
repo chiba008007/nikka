@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\MailTemplate;
 use App\Models\SankaFormItem;
+use App\Models\KoenParticipantForm;
 
 class MailEditController extends Controller
 {
@@ -45,13 +46,29 @@ class MailEditController extends Controller
             })
             ->keyBy('name');
 
+        $koenFormItems = KoenParticipantForm::where('page_type', 'koenform')
+            ->where('status', 1)
+            ->where('name', 'regexp', '^add_column_([1-9]|[1-4][0-9]|50)$')
+            ->orderBy('sort_order')
+            ->get()
+            ->map(function ($item) {
+                // [必須] など [] 内の文字を削除する
+                $item->label_ja = trim(
+                    preg_replace('/\[[^\]]*\]/u', '', $item->label_ja)
+                );
+
+                return $item;
+            })
+            ->keyBy('name');
+
         return view(
             'admin.mailEdit.edit',
             compact(
                 'mailTemplate',
                 'mailType',
                 'selectedMailType',
-                'sankaFormItem'
+                'sankaFormItem',
+                'koenFormItems',
             )
         );
     }

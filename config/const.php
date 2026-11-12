@@ -11,6 +11,26 @@ return [
         'MANUSCRIPT_REGISTRATION_EN' => '予行原稿登録(英語)',
     ],
 
+    // メールの置き換え
+    'MAIL_REPLACE_SANKA' => [
+        'sanka_code' => '参加登録ID',
+        'sanka_money' => '参加者合計金額',
+        'sanka_syubetu' => '参加種別金額',
+        'konsinkai_money' => '懇親会費',
+        'konsinkai_join' => '懇親会参加(する/しない)',
+    ],
+    'MAIL_REPLACE_KOEN' => [
+        'koen_code' => '講演登録ID',
+        'syozoku_total' => '所属機関総数',
+        'syozoku_kikan' => '所属機関(番号/名称/略称/英語)',
+        'tyosya_total' => '著者総数',
+        'tyosya_name' => '著者名(和名/英名/所属番号)',
+        'koen_name' => '講演者名',
+        'teacher_name' => '指導教員名',
+        'other' => '備考',
+        'happyo_number' => '発表番号'
+    ],
+
     // ステータス
     'STATUS' => [
         'DISABLED' => 0,

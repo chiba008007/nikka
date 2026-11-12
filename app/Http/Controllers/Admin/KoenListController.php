@@ -13,6 +13,10 @@ use App\Services\SankaFormService;
 use App\Models\SankaParticipant;
 use App\Models\KoenParticipant;
 use Illuminate\Support\Facades\DB;
+use App\Models\KoenParticipantAffiliation;
+use App\Models\KoenParticipantAuthor;
+use App\Services\FileUploadService;
+use App\Services\TemplateMailService;
 
 class KoenListController extends Controller
 {
@@ -370,21 +374,47 @@ class KoenListController extends Controller
             ->where('status', 1)
             ->where('name', 'regexp', '^add_column_([1-9]|[1-4][0-9]|50)$')
             ->with(['options' => function ($query) {
-                $query->where('status', 1)
-                      ->orderBy('sort_order');
+                $query->where('status', 1)->orderBy('sort_order');
             }])
             ->orderBy('sort_order')
             ->get();
         $koenFormItems = $sankaFormService->formatLabels($koenFormItems);
+
+        // 説明文
+        $description = KoenParticipantForm::where('page_type', 'koenform')
+            ->where('status', 1)
+            ->where('name', 'koen_form_descript')
+            ->first();
+
+        $authorOptions = KoenParticipantAuthorOption::where('status', 1)
+            ->get()
+            ->map(function ($item) {
+                if (in_array($item->type, ['author_title', 'author_name'], true)) {
+                    $item->note_ja = new \Illuminate\Support\HtmlString(
+                        str_replace(
+                            '[必須]',
+                            '<span class="required-label">必須</span>',
+                            e($item->note_ja ?? '')
+                        )
+                    );
+                }
+                return $item;
+            })
+            ->keyBy('type');
+
         return view(
             'admin.koen.registform',
-            compact('form', 'code', 'endai', 'koenFormItems')
+            compact('form', 'code', 'endai', 'koenFormItems', 'authorOptions', 'description')
         );
+
     }
 
 
-    public function koenRegists(Request $request)
-    {
+    public function koenRegists(
+        Request $request,
+        FileUploadService $uploadService,
+        TemplateMailService $mailService
+    ) {
         $participantId = $request->session()->get('koen_participant_id');
 
         if (!$participantId ||
@@ -399,7 +429,19 @@ class KoenListController extends Controller
             ->where('name', 'regexp', '^add_column_([1-9]|[1-4][0-9]|50)$')
             ->get();
 
-        DB::transaction(function () use ($request, $participantId, $items) {
+        $request->validate([
+            'uploadfile1' => 'nullable|file|max:10240',
+            'uploadfile2' => 'nullable|file|max:10240',
+            'uploadfile3' => 'nullable|file|max:10240',
+        ]);
+
+
+        $isUpdate = DB::transaction(function () use (
+            $request,
+            $participantId,
+            $items,
+            $uploadService
+        ) {
             // 講演番号の設定を取得
             $codes = $this->getKoenCodeSettings();
 
@@ -423,9 +465,15 @@ class KoenListController extends Controller
                 . str_pad((string) $serial, 4, '0', STR_PAD_LEFT)
                 . '-' . $suffix;
 
-            $koen = new KoenParticipant();
-            $koen->participant_id = $participantId;
-            $koen->koen_number = $koenNumber;
+            $koen = KoenParticipant::firstOrNew([
+                'participant_id' => $participantId,
+            ]);
+
+            $wasUpdate = $koen->exists;
+
+            if (!$koen->exists) {
+                $koen->koen_number = $koenNumber;
+            }
             $koen->status = 1;
 
             foreach ($items as $item) {
@@ -436,10 +484,113 @@ class KoenListController extends Controller
                     : $value;
             }
 
+            $koen->othertext = $request->input('othertext');
+
+            $koen->announcenumber = $request->input('announcenumber');
             $koen->save();
+
+
+            // アップロードファイルを保存
+            for ($i = 1; $i <= 3; $i++) {
+                $field = "uploadfile{$i}";
+
+                if ($request->hasFile($field)) {
+                    $path = $request->file($field)
+                        ->store("koen/{$koen->id}", 'local');
+
+                    $koen->{$field} = $path;
+                }
+            }
+
+            $koen->save();
+
+
+            for ($i = 1; $i <= 3; $i++) {
+                $field = "uploadfile{$i}";
+
+                if ($request->hasFile($field)) {
+                    $koen->{$field} = $uploadService->upload(
+                        $request->file($field),
+                        "koen/upload{$i}",
+                        "{$koen->announcenumber}-{$koen->koen_number}"
+                    );
+                }
+            }
+
+            $koen->save();
+
+            // 既存の所属機関を論理削除
+            KoenParticipantAffiliation::where('koen_participant_id', $koen->id)
+                ->whereNull('deleted_at')
+                ->update(['deleted_at' => now()]);
+
+            // 既存の著者名を論理削除
+            KoenParticipantAuthor::where('koen_participant_id', $koen->id)
+                ->whereNull('deleted_at')
+                ->update(['deleted_at' => now()]);
+
+
+            // 所属機関を保存
+            foreach ($request->input('affiliations', []) as $number => $row) {
+                KoenParticipantAffiliation::create([
+                    'koen_participant_id' => $koen->id,
+                    'affiliation_number' => (int) $number,
+                    'organization' => $row['organization'] ?? null,
+                    'department' => $row['department'] ?? null,
+                    'short_name' => $row['short_name'] ?? null,
+                    'english' => $row['english'] ?? null,
+                    'english_short' => $row['english_short'] ?? null,
+                ]);
+            }
+
+            // 著者名を保存
+            foreach ($request->input('authors', []) as $number => $row) {
+                KoenParticipantAuthor::create([
+                    'koen_participant_id' => $koen->id,
+                    'author_number' => (int) $number,
+                    'is_presenter' => (int) $request->input('presenter_index') === (int) $number,
+                    'is_award_contact' => (int) $request->input('award_contact_index') === (int) $number,
+                    'family_name_ja' => $row['family_name_ja'] ?? null,
+                    'given_name_ja' => $row['given_name_ja'] ?? null,
+                    'given_name_en' => $row['given_name_en'] ?? null,
+                    'family_name_en' => $row['family_name_en'] ?? null,
+                    'affiliation_numbers' => $row['affiliation_numbers'] ?? null,
+                ]);
+            }
+
+            return $wasUpdate;
+
         });
 
-        return back()->with('success', '登録しました。');
+        // ここに管理者・参加者へのメール送信処理
+
+        $adminEmail = config('mail.admin_address');
+        // メールアドレスのキーを取得
+        $mailColumn = SankaFormItem::where('group_key', 'mail')
+            ->where('name', 'like', 'add_column_%')
+            ->value('name');
+
+        $participantEmail = $mailColumn
+            ? SankaParticipant::find($participantId)?->{$mailColumn}
+            : null;
+
+        $mailTypes = [
+            'presentation_application' => 'presentation_mail',
+        //    'manuscript_registration' => 'manuscript_mail',
+        ];
+
+        foreach ($mailTypes as $type => $checkboxName) {
+            // 管理者には必ず送信
+            $mailService->send($type, $adminEmail, $isUpdate, $participantId);
+
+            // 参加者にはチェックされた場合のみ送信
+            if ($request->boolean($checkboxName) && $participantEmail) {
+                $mailService->send($type, $participantEmail, $isUpdate, $participantId);
+            }
+        }
+
+
+        return back()->withInput()->with('success', '登録しました。');
     }
 
     /**
