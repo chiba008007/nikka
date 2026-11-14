@@ -130,7 +130,9 @@
                     <td>
                        {{ $participant->updated_at }}
                     </td>
-                    <td>No</td>
+                    <td>
+                        {{ $participant->koenParticipant?->koen_number ?? '' }}
+                    </td>
                 </tr>
             @empty
                 <tr>

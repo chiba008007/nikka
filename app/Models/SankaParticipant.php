@@ -104,4 +104,8 @@ class SankaParticipant extends Model
         ->where('sanka_fee_item_id', 2)
         ->where('status', 1);
     }
+    public function koenParticipant()
+    {
+        return $this->hasOne(KoenParticipant::class, 'participant_id', 'id');
+    }
 }

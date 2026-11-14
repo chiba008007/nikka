@@ -42,7 +42,8 @@ class SankaListController extends Controller
         // 参加者を受付番号順で取得する
         $lists = SankaParticipant::with(
             'participationOption',
-            'banquetOption.prices'
+            'banquetOption.prices',
+            'koenParticipant'
         )
             ->orderBy('reception_serial')
             ->get();
