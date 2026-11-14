@@ -17,6 +17,7 @@ use App\Models\KoenParticipantAffiliation;
 use App\Models\KoenParticipantAuthor;
 use App\Services\FileUploadService;
 use App\Services\TemplateMailService;
+use Illuminate\Support\Facades\Storage;
 
 class KoenListController extends Controller
 {
@@ -94,11 +95,68 @@ class KoenListController extends Controller
         'author_speak',
         'author_contact',
         'author_speak_ja',
+        'author_speak_ja_sei',
+        'author_speak_ja_mei',
+        'author_speak_en_sei',
+        'author_speak_en_mei',
+        'author_speak_syozoku_number',
         'author_speak_en',
         'author_connect_number',
         'author_other',
         'author_draft',
     ];
+
+
+    public function list()
+    {
+
+        $headers = KoenParticipantForm::query()
+            ->with(['options' => function ($query) {
+                $query->where('status', 1);
+            }])
+            ->select('*')
+            ->selectRaw("TRIM(REGEXP_REPLACE(label_ja, '\\\\[[^]]*\\\\]', '')) AS label_ja_clean")
+            ->where('page_type', 'koenform')
+            ->where('status', 1)
+            ->where('list_display', 1)
+            ->orderBy('sort_order')
+            ->get();
+
+        $lists = KoenParticipant::query()
+            ->with([
+                'participant:id,reception_number,add_column_1,add_column_2'
+            ])
+            ->where('status', 1)
+            ->whereNull('deleted_at')
+            ->orderBy('id')
+            ->get();
+
+        return view('admin.koen.list', compact('lists', 'headers'));
+
+    }
+    public function edit(
+        int $id,
+    ) {
+
+    }
+    public function destroy(
+        int $id,
+    ) {
+
+    }
+    public function download($id, $file)
+    {
+        $koen = KoenParticipant::findOrFail($id);
+        $path = $koen->{$file};
+
+        abort_unless($path && Storage::disk('local')->exists($path), 404);
+
+        return response()->download(
+            Storage::disk('local')->path($path)
+        );
+    }
+
+
     public function loginform()
     {
         $form = KoenParticipantForm::where('page_type', 'login')
@@ -429,11 +487,103 @@ class KoenListController extends Controller
             ->where('name', 'regexp', '^add_column_([1-9]|[1-4][0-9]|50)$')
             ->get();
 
+        $rules = [];
+        $messages = [];
+        $attributes = [];
+
+        foreach ($items as $item) {
+            $required = (int) $item->required === 1;
+
+            if ($item->enable_source_name) {
+                $source = $items->firstWhere('name', $item->enable_source_name);
+
+                $sourceValue = $source?->options()
+                    ->where('status', 1)
+                    ->where('label_ja', $item->enable_source_value)
+                    ->value('value');
+
+                $required = $required
+                    && $sourceValue !== null
+                    && (string) $request->input($item->enable_source_name) === (string) $sourceValue;
+            }
+
+            $rules[$item->name] = $required ? 'required' : 'nullable';
+
+            $attributes[$item->name] = preg_replace(
+                '/\[[^\]]*\]/u',
+                '',
+                $item->label_ja ?? $item->name
+            );
+
+            if ($item->error_message) {
+                $messages["{$item->name}.required"] = $item->error_message;
+            }
+        }
+
+
         $request->validate([
             'uploadfile1' => 'nullable|file|max:10240',
             'uploadfile2' => 'nullable|file|max:10240',
             'uploadfile3' => 'nullable|file|max:10240',
         ]);
+
+        $authorCount = (int) $request->input('author_count', 1);
+
+        $authorLabels = KoenParticipantAuthorOption::query()
+            ->where('status', 1)
+            ->pluck('note_ja', 'type');
+
+        $rules = array_merge($rules, [
+            'author_count' => 'required|integer|between:1,10',
+            'presenter_index' => "required|integer|between:1,{$authorCount}",
+            'award_contact_index' => "required|integer|between:1,{$authorCount}",
+        ]);
+
+        $authorFields = [
+            'family_name_ja' => 'author_speak_ja_sei',
+            'given_name_ja' => 'author_speak_ja_mei',
+            'given_name_en' => 'author_speak_en_sei',
+            'family_name_en' => 'author_speak_en_mei',
+            'affiliation_numbers' => 'author_connect_number',
+        ];
+        $affiliationCount = (int) $request->input('affiliation_count', 1);
+        for ($i = 1; $i <= $authorCount; $i++) {
+            foreach ($authorFields as $field => $type) {
+                $key = "authors.{$i}.{$field}";
+
+                $rules[$key] = $field === 'affiliation_numbers'
+                    ? [
+                        'required',
+                        function ($attribute, $value, $fail) use ($affiliationCount) {
+                            foreach (explode(',', $value) as $number) {
+                                if (!ctype_digit($number)
+                                    || (int) $number < 1
+                                    || (int) $number > $affiliationCount) {
+                                    $fail("所属番号に誤りがあります。");
+                                    return;
+                                }
+                            }
+                        }
+                    ]
+                    : 'required';
+                $attributes[$key] = "著者{$i}の"
+                    . $authorLabels->get($type, $field);
+            }
+        }
+
+        $request->validate(
+            $rules,
+            array_merge([
+                'required' => ':attributeは必須です。',
+                'integer' => ':attributeは数値で入力してください。',
+                'between' => ':attributeの値が範囲外です。',
+            ], $messages),
+            array_merge([
+                'author_count' => '著者数',
+                'presenter_index' => '発表者',
+                'award_contact_index' => '連絡担当者',
+            ], $attributes)
+        );
 
 
         $isUpdate = DB::transaction(function () use (

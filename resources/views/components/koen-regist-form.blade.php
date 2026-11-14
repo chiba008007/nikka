@@ -14,6 +14,13 @@
     </div>
 
     <div class="card-body">
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                @foreach ($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                @endforeach
+            </div>
+        @endif
         <div class="row">
             <div class="col-12 d-flex">
                 <div class="col-12 d-flex px-0">
@@ -371,13 +378,13 @@
                                             name="authors[{{ $i }}][family_name_ja]"
                                             class="form-control form-control-sm"
                                             value="{{ old("authors.$i.family_name_ja") }}"
-                                            placeholder="姓">
+                                            placeholder="{{ $note('author_speak_ja_sei') }}">
 
                                         <input type="text"
                                             name="authors[{{ $i }}][given_name_ja]"
                                             class="form-control form-control-sm"
                                             value="{{ old("authors.$i.given_name_ja") }}"
-                                            placeholder="名">
+                                            placeholder="{{ $note('author_speak_ja_mei') }}">
                                     </div>
                                 </td>
 
@@ -387,22 +394,23 @@
                                             name="authors[{{ $i }}][given_name_en]"
                                             class="form-control form-control-sm"
                                             value="{{ old("authors.$i.given_name_en") }}"
-                                            placeholder="Given name">
+                                            placeholder="{{ $note('author_speak_en_sei') }}">
 
                                         <input type="text"
                                             name="authors[{{ $i }}][family_name_en]"
                                             class="form-control form-control-sm"
                                             value="{{ old("authors.$i.family_name_en") }}"
-                                            placeholder="Family name">
+                                            placeholder="{{ $note('author_speak_en_mei') }}">
                                     </div>
                                 </td>
 
                                 <td>
-                                    <input type="text"
+                                    <input type="number"
+                                        min=1
                                         name="authors[{{ $i }}][affiliation_numbers]"
                                         class="form-control form-control-sm"
                                         value="{{ old("authors.$i.affiliation_numbers") }}"
-                                        placeholder="例)1,2">
+                                        placeholder="{{ $note('author_speak_syozoku_number') }}">
                                 </td>
                             </tr>
                         @endfor

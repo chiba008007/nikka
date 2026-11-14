@@ -478,6 +478,50 @@
                             >
                     </div>
                 </div>
+                <div class="mt-1">仮置き</div>
+                <div class="row">
+                    <div class="col-2">
+                        <input
+                            type="text"
+                            class="form-control"
+                            name="authors[author_speak_ja_sei][note_ja]"
+                            value="{{ old('authors.author_speak_ja_sei.note_ja', $form['author_speak_ja_sei']->note_ja) }}"
+                            >
+                    </div>
+                    <div class="col-2">
+                        <input
+                            type="text"
+                            class="form-control"
+                            name="authors[author_speak_ja_mei][note_ja]"
+                            value="{{ old('authors.author_speak_ja_mei.note_ja', $form['author_speak_ja_mei']->note_ja) }}"
+                            >
+                    </div>
+                    <div class="col-2">
+                        <input
+                            type="text"
+                            class="form-control"
+                            name="authors[author_speak_en_sei][note_ja]"
+                            value="{{ old('authors.author_speak_en_sei.note_ja', $form['author_speak_en_sei']->note_ja) }}"
+                            >
+                    </div>
+                    <div class="col-2">
+                        <input
+                            type="text"
+                            class="form-control"
+                            name="authors[author_speak_en_mei][note_ja]"
+                            value="{{ old('authors.author_speak_en_mei.note_ja', $form['author_speak_en_mei']->note_ja) }}"
+                            >
+                    </div>
+                    <div class="col-3">
+                        <input
+                            type="text"
+                            class="form-control"
+                            name="authors[author_speak_syozoku_number][note_ja]"
+                            value="{{ old('authors.author_speak_syozoku_number.note_ja', $form['author_speak_syozoku_number']->note_ja) }}"
+                            >
+                    </div>
+
+                </div>
             </div>
         </div>
         <div class="card">

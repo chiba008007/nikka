@@ -51,25 +51,26 @@
         <tbody>
             @forelse ($lists as $participant)
                 <tr>
-                    <td class="d-flex">
-                        <a href="{{ route('sanka.list.edit', $participant->id) }}"
-                            class="form-control btn btn-primary">
-                                編集
-                        </a>
-                        <form
-                            method="POST"
-                            action="{{ route('sanka.list.destroy', $participant->id) }}"
-                            class="ml-2"
-                            onsubmit="return confirm('削除してよろしいですか？');"
-                        >
-                            @csrf
-                            @method('DELETE')
+                    <td >
+                        <div class="d-flex">
+                            <a href="{{ route('sanka.list.edit', $participant->id) }}"
+                                class="btn btn-primary btn-sm">
+                                    編集
+                            </a>
+                            <form
+                                method="POST"
+                                action="{{ route('sanka.list.destroy', $participant->id) }}"
+                                class="ml-2"
+                                onsubmit="return confirm('削除してよろしいですか？');"
+                            >
+                                @csrf
+                                @method('DELETE')
 
-                            <button type="submit" class="form-control btn btn-danger">
-                                削除
-                            </button>
-                        </form>
-
+                                <button type="submit" class=" btn btn-danger btn-sm">
+                                    削除
+                                </button>
+                            </form>
+                        </div>
                     </td>
                     @foreach ($headers as $header)
                         <td>

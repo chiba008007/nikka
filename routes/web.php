@@ -104,10 +104,21 @@ Route::middleware('auth')->group(function () {
 
     // Route::get('/sanka/list', [SankaController::class, 'list'])->name('sanka.list');
     // 講演一覧
-    Route::get('/koen/list', [SankaListController::class, 'list'])->name('koen.list.index');
+    Route::get('/koen/list', [KoenListController::class, 'list'])->name('koen.list.index');
     // 講演登録
     Route::get('/koen/list/regist', [KoenListController::class, 'regist'])->name('koen.list.regist');
     Route::post('/koen/list/regist/koenRegists', [KoenListController::class, 'koenRegists'])->name('koen.list.regist.koenRegists');
+
+    Route::get('/koen/list/edit/{id}', [KoenListController::class, 'edit'])
+    ->name('koen.list.edit');
+
+    Route::delete('/koen/list/{id}', [KoenListController::class, 'destroy'])
+        ->name('koen.list.destroy');
+
+    // ファイルのダウンロード
+    Route::get('/koen/download/{id}/{file}', [KoenListController::class, 'download'])
+    ->where('file', 'uploadfile[123]')
+    ->name('koen.download');
 
     Route::get('/koen/participant/search', [SankaListCreateController::class, 'searchParticipant'])->name('koen.participant.search');
 

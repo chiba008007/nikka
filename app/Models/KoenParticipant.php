@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\SankaParticipant;
 
 class KoenParticipant extends Model
 {
@@ -44,4 +45,13 @@ class KoenParticipant extends Model
     protected $casts = [
         'status' => 'integer',
     ];
+
+    public function participant()
+    {
+        return $this->belongsTo(
+            SankaParticipant::class,
+            'participant_id',
+            'id'
+        );
+    }
 }

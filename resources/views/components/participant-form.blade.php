@@ -139,7 +139,10 @@
                     $required = "";
                 @endphp
 
-                @if (isset($formItems[$titleKey]))
+                @if (
+                    isset($formItems[$titleKey]) &&
+                    trim($formItems[$titleKey]->label_ja ?? '') !== ''
+                )
                     {{-- 項目タイトル --}}
                     <div class="section-title mt-3 jp">
                         {{ $formItems[$titleKey]->label_ja }}
@@ -158,7 +161,7 @@
                             </span>
                         @endif
                     </div>
-                    @if ($input)
+                    @if ($input && !in_array($i, [2, 4]))
                         <div class="jp">{{$formItems[$inputKey]->explain_jp}}</div>
                         <div class="en">{{$formItems[$inputKey]->explain_en}}</div>
                         <div class="form-row">
