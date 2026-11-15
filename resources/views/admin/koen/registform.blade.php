@@ -30,6 +30,7 @@
             :koenFormItems="$koenFormItems"
             :description="$description"
             :authorOptions="$authorOptions"
+            :form="$form"
         />
 
         <div class="card">
@@ -49,6 +50,17 @@
                                 type="file"
                                 name="uploadfile{{ $i }}"
                                 class="form-control">
+
+                            @if (!empty($form["uploadfile{$i}"]))
+                                <div class="mt-1">
+                                    <a href="{{ route('koen.download', [
+                                        'id' => $form['id'],
+                                        'file' => "uploadfile{$i}"
+                                    ]) }}">
+                                        {{ basename($form["uploadfile{$i}"]) }}
+                                    </a>
+                                </div>
+                            @endif
                         </div>
                     @endfor
                 </div>
@@ -62,7 +74,8 @@
                             name="announcenumber"
                             class="form-control"
                             style="max-width: 250px;"
-                            value="{{ old('announcenumber') }}">
+                            value="{{ old('announcenumber', $form['announcenumber'] ?? '') }}"
+                        >
                     </div>
                 </div>
             </div>

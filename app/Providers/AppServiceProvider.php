@@ -142,6 +142,11 @@ class AppServiceProvider extends ServiceProvider
                     'icon'  => 'fas fa-fw fa-id-card',
                 ]);
                 $event->menu->add([
+                    'text'  => 'CSVダウンロード',
+                    'route' => 'koen.list.csv',
+                    'icon'  => 'fas fa-fw fa-download',
+                ]);
+                $event->menu->add([
                     'text'  => __('koen.title.editform'),
                     'route' => 'dashboard',
                     'icon'  => 'fas fa-fw fa-barcode',

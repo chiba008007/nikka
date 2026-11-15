@@ -145,9 +145,15 @@
     }
 
     /* ヘッダーとセルを改行させない */
-    #participant-table th,
-    #participant-table td {
+    /* ヘッダーは改行しない */
+    #participant-table th {
         white-space: nowrap;
+    }
+
+    /* セル内は自動改行する */
+    #participant-table td {
+        white-space: normal;
+        overflow-wrap: anywhere;
     }
     .dataTables_scrollHead thead tr:first-child th:first-child::before,
     .dataTables_scrollHead thead tr:first-child th:first-child::after {

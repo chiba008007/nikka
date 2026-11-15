@@ -134,16 +134,23 @@ class KoenListController extends Controller
         return view('admin.koen.list', compact('lists', 'headers'));
 
     }
-    public function edit(
-        int $id,
-    ) {
+
+    public function destroy(int $id)
+    {
+        $koenParticipant = KoenParticipant::findOrFail($id);
+
+        $koenParticipant->delete();
+
+        return redirect()
+            ->route('koen.list.index')
+            ->with('success', '講演情報を削除しました。');
+    }
+    public function csv()
+    {
 
     }
-    public function destroy(
-        int $id,
-    ) {
 
-    }
+
     public function download($id, $file)
     {
         $koen = KoenParticipant::findOrFail($id);
@@ -410,9 +417,43 @@ class KoenListController extends Controller
 
 
     //
-    public function regist(SankaFormService $sankaFormService)
-    {
-        $form = [];
+    public function regist(
+        SankaFormService $sankaFormService,
+        ?int $id = null
+    ) {
+
+        $koenParticipant = KoenParticipant::with('participant')->findOrFail($id);
+
+        $form = $koenParticipant->toArray();
+
+        $form['authors'] = KoenParticipantAuthor::where('koen_participant_id', $id)
+            ->whereNull('deleted_at')
+            ->orderBy('author_number')
+            ->get()
+            ->keyBy('author_number')
+            ->toArray();
+
+        $authors = collect($form['authors']);
+
+        $form['presenter_index'] = $authors
+            ->firstWhere('is_presenter', 1)['author_number'] ?? 1;
+
+        $form['award_contact_index'] = $authors
+            ->firstWhere('is_award_contact', 1)['author_number'] ?? 0;
+
+        $form['affiliations'] = KoenParticipantAffiliation::where('koen_participant_id', $id)
+            ->whereNull('deleted_at')
+            ->orderBy('affiliation_number')
+            ->get()
+            ->keyBy('affiliation_number')
+            ->toArray();
+
+        $form['reception_number'] = substr(
+            $koenParticipant->participant->reception_number,
+            1,
+            4
+        );
+
         $code = Setting::get()->keyBy('type');
         // 演題登録画面表示用入力フォーム
         $endai = $sankaFormService->formatLabels(

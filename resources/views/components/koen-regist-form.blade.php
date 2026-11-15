@@ -4,7 +4,8 @@
     'endai',
     'koenFormItems',
     'description',
-    'authorOptions'
+    'authorOptions',
+    'form' => []
 ])
 
 <div class="card">
@@ -29,7 +30,7 @@
 
                   <div class="d-flex ml-5">
                     <span class="pt-2">{{ $code['sankacode1']->name_ja }}</span>
-                    <input type="text" id="reception_number" name="reception_number" value="{{ old('reception_number') }}" class="form-control" placeholder="例)0001" />
+                    <input type="text" id="reception_number" name="reception_number" value="{{ old('reception_number', $form['reception_number'] ?? '') }}" class="form-control" placeholder="例)0001" />
                   </div>
                   <div class="pt-2"> - {{ $code['sankacode2']->name_ja }} - </div>
                   <div class="pt-2">{{ $code['sankacode3']->name_ja }}</div>
@@ -106,7 +107,7 @@
                           <div class="d-flex flex-wrap" data-toggle="buttons">
                               @foreach ($item->options as $option)
                                   @php
-                                      $checked = old($item->name) == $option->value;
+                                      $checked = old($item->name, $form[$item->name] ?? null) == $option->value;
                                   @endphp
 
                                   <label class="btn btn-outline-primary mr-2 mb-2
@@ -131,7 +132,7 @@
                                 @foreach ($item->options as $option)
                                     <option value="{{ $option->value }}"
                                         data-label-ja="{{ $option->label_ja }}"
-                                        {{ old($item->name) == $option->value ? 'selected' : '' }}>
+                                        {{ old($item->name, $form[$item->name] ?? null) == $option->value ? 'selected' : '' }}>
                                         {{ $option->label_ja }}
                                     </option>
                                 @endforeach
@@ -141,10 +142,21 @@
                         @case('checkbox')
                             @foreach ($item->options as $option)
                                 <label class="mr-3">
+
+                                    @php
+                                        $saved = $form[$item->name] ?? [];
+                                        $saved = is_string($saved) ? (json_decode($saved, true) ?? []) : $saved;
+                                        $selected = old($item->name, $saved);
+                                    @endphp
                                     <input type="checkbox"
                                            name="{{ $item->name }}[]"
                                            value="{{ $option->value }}"
-                                           {{ in_array((string) $option->value, array_map('strval', old($item->name, []))) ? 'checked' : '' }}>
+                                            @checked(in_array(
+                                                (string) $option->value,
+                                                array_map('strval', (array) $selected),
+                                                true
+                                            ))
+                                        >
                                     <span class="jp">{{ $option->label_ja }}</span>
                                     <span class="en">{{ $option->label_en }}</span>
                                 </label>
@@ -156,14 +168,14 @@
                                       class="form-control js-language-input description"
                                       placeholder="{{ $item->placeholder_ja }}"
                                       data-placeholder-ja="{{ $item->placeholder_ja }}"
-                                      data-placeholder-en="{{ $item->placeholder_en }}">{{ old($item->name) }}</textarea>
+                                      data-placeholder-en="{{ $item->placeholder_en }}">{{ old($item->name, $form[$item->name] ?? null) }}</textarea>
                             @break
 
                         @default
                             <input type="{{ $item->type_code === 'password' ? 'password' : 'text' }}"
                                    name="{{ $item->name }}"
                                    class="form-control js-language-input"
-                                   value="{{ $item->type_code === 'password' ? '' : old($item->name) }}"
+                                   value="{{ $item->type_code === 'password' ? '' : old($item->name, $form[$item->name] ?? null) }}"
                                    placeholder="{{ $item->placeholder_ja }}"
                                    data-placeholder-ja="{{ $item->placeholder_ja }}"
                                    data-placeholder-en="{{ $item->placeholder_en }}">
@@ -185,8 +197,15 @@
                 $labels->get($key)?->getAttribute('note_' . $lang) ?? '';
 
             $maxCount = 10;
-            $affCount = min($maxCount, max(1, (int) old('affiliation_count', 1)));
-            $authorCount = min($maxCount, max(1, (int) old('author_count', 1)));
+            $affCount = min($maxCount, max(1, (int) old(
+                'affiliation_count',
+                count($form['affiliations'] ?? [])
+            )));
+
+            $authorCount = min($maxCount, max(1, (int) old(
+                'author_count',
+                count($form['authors'] ?? [])
+            )));
         @endphp
 
         <div id="koen-author-ui" class="mt-4">
@@ -254,7 +273,7 @@
                                     <input type="text"
                                         name="affiliations[{{ $i }}][organization]"
                                         class="form-control form-control-sm mb-1 js-language-input"
-                                        value="{{ old("affiliations.$i.organization") }}"
+                                        value="{{ old("affiliations.$i.organization", $form['affiliations'][$i]['organization'] ?? '') }}"
                                         placeholder="{{ $note('author_kikan_placeholder') }}"
                                         data-placeholder-ja="{{ $note('author_kikan_placeholder') }}"
                                         data-placeholder-en="{{ $note('author_kikan_placeholder', 'en') }}">
@@ -262,7 +281,7 @@
                                     <input type="text"
                                         name="affiliations[{{ $i }}][department]"
                                         class="form-control form-control-sm js-language-input"
-                                        value="{{ old("affiliations.$i.department") }}"
+                                        value="{{ old("affiliations.$i.department", $form['affiliations'][$i]['department'] ?? '') }}"
                                         placeholder="{{ $note('author_kikan_gakubu_placeholder') }}"
                                         data-placeholder-ja="{{ $note('author_kikan_gakubu_placeholder') }}"
                                         data-placeholder-en="{{ $note('author_kikan_gakubu_placeholder', 'en') }}">
@@ -272,7 +291,7 @@
                                     <input type="text"
                                         name="affiliations[{{ $i }}][short_name]"
                                         class="form-control form-control-sm js-language-input"
-                                        value="{{ old("affiliations.$i.short_name") }}"
+                                        value="{{ old("affiliations.$i.short_name", $form['affiliations'][$i]['short_name'] ?? '') }}"
                                         placeholder="{{ $note('author_ryaku_placeholder') }}"
                                         data-placeholder-ja="{{ $note('author_ryaku_placeholder') }}"
                                         data-placeholder-en="{{ $note('author_ryaku_placeholder', 'en') }}">
@@ -282,7 +301,7 @@
                                     <input type="text"
                                         name="affiliations[{{ $i }}][english]"
                                         class="form-control form-control-sm mb-1 js-language-input"
-                                        value="{{ old("affiliations.$i.english") }}"
+                                        value="{{ old("affiliations.$i.english", $form['affiliations'][$i]['english'] ?? '') }}"
                                         placeholder="{{ $note('author_english_placeholder') }}"
                                         data-placeholder-ja="{{ $note('author_english_placeholder') }}"
                                         data-placeholder-en="{{ $note('author_english_placeholder', 'en') }}">
@@ -290,7 +309,7 @@
                                     <input type="text"
                                         name="affiliations[{{ $i }}][english_short]"
                                         class="form-control form-control-sm js-language-input"
-                                        value="{{ old("affiliations.$i.english_short") }}"
+                                        value="{{ old("affiliations.$i.english_short", $form['affiliations'][$i]['english_short'] ?? '') }}"
                                         placeholder="{{ $note('author_english_ryaku_placeholder') }}"
                                         data-placeholder-ja="{{ $note('author_english_ryaku_placeholder') }}"
                                         data-placeholder-en="{{ $note('author_english_ryaku_placeholder', 'en') }}">
@@ -362,14 +381,16 @@
                                     <input type="radio"
                                         name="presenter_index"
                                         value="{{ $i }}"
-                                        @checked((int) old('presenter_index', 1) === $i)>
+                                        @checked((int) old('presenter_index', $form['presenter_index'] ?? 1) === $i)
+                                    >
                                 </td>
 
                                 <td class="text-center">
                                     <input type="radio"
                                         name="award_contact_index"
                                         value="{{ $i }}"
-                                        @checked((int) old('award_contact_index', 0) === $i)>
+                                        @checked((int) old('award_contact_index', $form['award_contact_index'] ?? 0) === $i)
+                                    >
                                 </td>
 
                                 <td>
@@ -377,13 +398,13 @@
                                         <input type="text"
                                             name="authors[{{ $i }}][family_name_ja]"
                                             class="form-control form-control-sm"
-                                            value="{{ old("authors.$i.family_name_ja") }}"
+                                            value="{{ old("authors.$i.family_name_ja", $form['authors'][$i]['family_name_ja'] ?? '') }}"
                                             placeholder="{{ $note('author_speak_ja_sei') }}">
 
                                         <input type="text"
                                             name="authors[{{ $i }}][given_name_ja]"
                                             class="form-control form-control-sm"
-                                            value="{{ old("authors.$i.given_name_ja") }}"
+                                            value="{{ old("authors.$i.given_name_ja", $form['authors'][$i]['given_name_ja'] ?? '') }}"
                                             placeholder="{{ $note('author_speak_ja_mei') }}">
                                     </div>
                                 </td>
@@ -393,13 +414,14 @@
                                         <input type="text"
                                             name="authors[{{ $i }}][given_name_en]"
                                             class="form-control form-control-sm"
-                                            value="{{ old("authors.$i.given_name_en") }}"
+
+                                            value="{{ old("authors.$i.given_name_en", $form['authors'][$i]['given_name_en'] ?? '') }}"
                                             placeholder="{{ $note('author_speak_en_sei') }}">
 
                                         <input type="text"
                                             name="authors[{{ $i }}][family_name_en]"
                                             class="form-control form-control-sm"
-                                            value="{{ old("authors.$i.family_name_en") }}"
+                                            value="{{ old("authors.$i.family_name_en", $form['authors'][$i]['family_name_en'] ?? '') }}"
                                             placeholder="{{ $note('author_speak_en_mei') }}">
                                     </div>
                                 </td>
@@ -409,7 +431,7 @@
                                         min=1
                                         name="authors[{{ $i }}][affiliation_numbers]"
                                         class="form-control form-control-sm"
-                                        value="{{ old("authors.$i.affiliation_numbers") }}"
+                                        value="{{ old("authors.$i.affiliation_numbers", $form['authors'][$i]['affiliation_numbers'] ?? '') }}"
                                         placeholder="{{ $note('author_speak_syozoku_number') }}">
                                 </td>
                             </tr>
@@ -424,8 +446,7 @@
         <div class="en">
             {!! $authorOptions->get('author_other')->note_en !!}
         </div>
-        <textarea class="form-control" name="othertext">{{ old('othertext') }}</textarea>
-
+        <textarea class="form-control" name="othertext">{{ old('othertext', $form['othertext'] ?? '') }}</textarea>
 
     </div>
 </div>

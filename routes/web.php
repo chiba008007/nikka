@@ -108,12 +108,16 @@ Route::middleware('auth')->group(function () {
     // 講演登録
     Route::get('/koen/list/regist', [KoenListController::class, 'regist'])->name('koen.list.regist');
     Route::post('/koen/list/regist/koenRegists', [KoenListController::class, 'koenRegists'])->name('koen.list.regist.koenRegists');
-
-    Route::get('/koen/list/edit/{id}', [KoenListController::class, 'edit'])
+    //講演編集
+    Route::get('/koen/list/edit/{id}', [KoenListController::class, 'regist'])
     ->name('koen.list.edit');
 
     Route::delete('/koen/list/{id}', [KoenListController::class, 'destroy'])
         ->name('koen.list.destroy');
+    // 講演CSVダウンロード
+    Route::delete('/koen/list/csv', [KoenListController::class, 'csv'])
+        ->name('koen.list.csv');
+
 
     // ファイルのダウンロード
     Route::get('/koen/download/{id}/{file}', [KoenListController::class, 'download'])
