@@ -54,4 +54,18 @@ class KoenParticipant extends Model
             'id'
         );
     }
+    public function authors()
+    {
+        return $this->hasMany(
+            KoenParticipantAuthor::class,
+            'koen_participant_id'
+        );
+    }
+    public function affiliations()
+    {
+        return $this->hasMany(
+            KoenParticipantAffiliation::class,
+            'koen_participant_id'
+        );
+    }
 }

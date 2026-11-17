@@ -274,8 +274,11 @@
                     <li>{{$enablemessage }}</li>
                     <li>{{$columnmessage }}</li>
                     <li>{{$typemessage }}</li>
+
                 </ul>
-                <div class="form-group">
+
+
+                <div class="form-group mt-3">
                     <h4>受付番号{{$lang}}</h4>
 
                     <div class="row mt-3">
@@ -298,6 +301,21 @@
                     </div>
 
                 </div>
+
+                <div class="card p-3">
+                    <div class="row ">
+                        <div class="col-12 text-danger">
+                            以下項番は固定となります。
+                        </div>
+                        <div class="col-3">■「No.1」参加者氏名(苗字)</div>
+                        <div class="col-3">■「No.2」参加者氏名(名前)</div>
+                        <div class="col-3">■「No.3」参加者氏名(苗字かな)</div>
+                        <div class="col-3">■「No.4」参加者氏名(名前かな)</div>
+                        <div class="col-3">■「No.13」メールアドレス</div>
+                        <div class="col-3">■「No.18」備考</div>
+                    </div>
+                </div>
+
                 @for ($i = 1; $i <= 50; $i++)
                     @php
                         // DBのnameと同じキーを作成
@@ -305,40 +323,45 @@
 
                         // title1 ～ title50 のキーを作成
                         $titleKey = 'title' . $i;
+                        $disabled = in_array($i, [1, 2, 3, 4, 13, 18]) ? 'disabled' : '';
                     @endphp
                     <div class="form-group">
                         <hr />
                         <h4>No{{ $i }}.</h4>
                         <label for="title">{{$title}} {{$lang}}</label>
                         <div class="row">
-                            <div class="col-4 ">
-                                <label class="mb-0 pb-0">
-                                    <input
-                                        type="checkbox"
-                                        name="{{ $titleKey }}[status]"
-                                        value="1"
-                                        {{ old($titleKey . '.status', $form[$titleKey]->status ?? 0) ? 'checked' : '' }}
-                                    >
-                                    {{ $enable }}
-                                </label>
-                                <label class="mb-0 pb-0">
-                                    <input
-                                        type="checkbox"
-                                        name="{{ $titleKey }}[list_display]"
-                                        value="1"
-                                        {{ old($titleKey . '.list_display', $form[$titleKey]->list_display ?? 0) ? 'checked' : '' }}
-                                    >
-                                    {{ $listDisplay }}
-                                </label>
-                                <label class="mb-0 pb-0">
-                                    <input
-                                        type="checkbox"
-                                        name="{{ $titleKey }}[endai_regist_flag]"
-                                        value="1"
-                                        {{ old($titleKey . '.endai_regist_flag', $form[$titleKey]->endai_regist_flag ?? 0) ? 'checked' : '' }}
-                                    >
-                                    {{ $koenDisplay }}
-                                </label>
+                            <div class="col-4">
+                                @foreach ([
+                                    'status' => $enable,
+                                    'list_display' => $listDisplay,
+                                    'endai_regist_flag' => $koenDisplay,
+                                ] as $field => $label)
+
+                                    @php
+                                        $value = $form[$titleKey]->{$field} ?? 0;
+                                    @endphp
+
+                                    <label class="mb-0 pb-0">
+                                        <input
+                                            type="checkbox"
+                                            name="{{ $titleKey }}[{{ $field }}]"
+                                            value="1"
+                                            {{ old($titleKey . '.' . $field, $value) ? 'checked' : '' }}
+                                            {{ $disabled ? 'disabled' : '' }}
+                                        >
+
+                                        @if ($disabled)
+                                            <input
+                                                type="hidden"
+                                                name="{{ $titleKey }}[{{ $field }}]"
+                                                value="{{ $value }}"
+                                            >
+                                        @endif
+
+                                        {{ $label }}
+                                    </label>
+                                @endforeach
+
                                 <div>{{ $requiredmessage }}</div>
                             </div>
                         </div>
@@ -350,13 +373,29 @@
                                     name="{{ $titleKey }}[label_ja]"
                                     class="form-control"
                                     value="{{ old($titleKey . '.label_ja', $form[$titleKey]->label_ja ?? '') }}"
+                                    {{ $disabled ? 'disabled' : '' }}
                                 >
+                                @if ($disabled)
+                                    <input
+                                        type="hidden"
+                                        name="{{ $titleKey }}[label_ja]"
+                                        value="{{ old($titleKey . '.label_ja', $form[$titleKey]->label_ja ?? '') }}"
+                                    >
+                                @endif
                                 <input
                                     type="text"
                                     name="{{ $titleKey }}[label_en]"
                                     class="form-control ml-2"
                                     value="{{ old($titleKey . '.label_en', $form[$titleKey]->label_en ?? '') }}"
+                                    {{ $disabled ? 'disabled' : '' }}
                                 >
+                                @if ($disabled)
+                                    <input
+                                        type="hidden"
+                                        name="{{ $titleKey }}[label_en]"
+                                        value="{{ old($titleKey . '.label_en', $form[$titleKey]->label_en ?? '') }}"
+                                    >
+                                @endif
                             </div>
                         </div>
                         <div class="row mt-3">
@@ -382,7 +421,15 @@
                                         name="{{ $key }}[status]"
                                         value="1"
                                         {{ old($key . '.status', $form[$key]->status ?? 0) ? 'checked' : '' }}
+                                        {{ $disabled ? 'disabled' : '' }}
                                     > {{ $enable }}
+                                    @if ($disabled)
+                                        <input
+                                            type="hidden"
+                                            name="{{ $key }}[status]"
+                                            value="{{ $form[$key]->status ?? 0 }}"
+                                        >
+                                    @endif
                                 </label>
 
                                 <label class="ml-2">
@@ -391,7 +438,15 @@
                                         name="{{ $key }}[required]"
                                         value="1"
                                         {{ old($key . '.required', $form[$key]->required ?? 0) ? 'checked' : '' }}
+                                        {{ $disabled ? 'disabled' : '' }}
                                     > {{ $required }}
+                                    @if ($disabled)
+                                        <input
+                                            type="hidden"
+                                            name="{{ $key }}[required]"
+                                            value="{{ $form[$key]->required ?? 0 }}"
+                                        >
+                                    @endif
                                 </label>
 
                                 <label class="ml-2">
@@ -400,7 +455,15 @@
                                         name="{{ $key }}[column]"
                                         value="2"
                                         {{ old($key . '.column', $form[$key]->column ?? 1) == 2 ? 'checked' : '' }}
+                                        {{ $disabled ? 'disabled' : '' }}
                                     > {{ $column }}
+                                    @if ($disabled)
+                                        <input
+                                            type="hidden"
+                                            name="{{ $key }}[column]"
+                                            value="{{ $form[$key]->column ?? 1 }}"
+                                        >
+                                    @endif
                                 </label>
                             </div>
                             <div class="col-12 d-flex">
@@ -413,10 +476,19 @@
                                             name="{{ $key }}[group_key]"
                                             value="{{ $groupKey }}"
                                             {{ old($key . '.group_key', $form[$key]->group_key ?? 'text') === $groupKey ? 'checked' : '' }}
+                                            {{ $disabled ? 'disabled' : '' }}
                                         >
                                         {{ $groupKey }}
                                     </label>
                                 @endforeach
+
+                                @if ($disabled)
+                                    <input
+                                        type="hidden"
+                                        name="{{ $key }}[group_key]"
+                                        value="{{ $form[$key]->group_key ?? 'text' }}"
+                                    >
+                                @endif
                             </div>
 
                         </div>
@@ -520,6 +592,7 @@
                                 <select
                                     name="{{ $key }}[type]"
                                     class="form-control"
+                                    {{ $disabled ? 'disabled' : '' }}
                                 >
                                     @foreach ($typearray as $type)
                                         <option
@@ -530,6 +603,14 @@
                                         </option>
                                     @endforeach
                                 </select>
+
+                                @if ($disabled)
+                                    <input
+                                        type="hidden"
+                                        name="{{ $key }}[type]"
+                                        value="{{ $form[$key]->type ?? 'text' }}"
+                                    >
+                                @endif
                             </div>
                         </div>
                         {{-- チェックボックス選択時の備考説明文 --}}
@@ -649,6 +730,32 @@ $(function () {
     position: sticky;
     top: 10px;
     z-index: 1030;
+}
+input[type="checkbox"]:disabled,
+input[type="radio"]:disabled {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #000;
+    background-color: white;
+    opacity: 1;
+    vertical-align: middle;
+    cursor: not-allowed;
+}
+
+input[type="checkbox"]:disabled {
+    border-radius: 3px;
+}
+
+input[type="radio"]:disabled {
+    border-radius: 50%;
+}
+
+input[type="checkbox"]:disabled:checked,
+input[type="radio"]:disabled:checked {
+    background-color: #000;
+    box-shadow: inset 0 0 0 3px white;
 }
 </style>
 @stop

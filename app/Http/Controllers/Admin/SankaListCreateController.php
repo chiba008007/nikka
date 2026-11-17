@@ -97,7 +97,7 @@ class SankaListCreateController extends Controller
                 // add_column_1 ～ add_column_50のみ
                 if (str_starts_with($key, 'add_column_')) {
                     $updateData['required'] = isset($data['required']) ? 1 : 0;
-                    $updateData['column'] = isset($data['column']) ? 2 : 1;
+                    $updateData['column'] = ($data['column'] ?? 1) == 2 ? 2 : 1;
                 }
                 // title1 ～ title50 の演題登録画面表示フラグ
                 if (preg_match('/^title([1-9]|[1-4][0-9]|50)$/', $key)) {

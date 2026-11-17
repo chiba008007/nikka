@@ -115,7 +115,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/koen/list/{id}', [KoenListController::class, 'destroy'])
         ->name('koen.list.destroy');
     // 講演CSVダウンロード
-    Route::delete('/koen/list/csv', [KoenListController::class, 'csv'])
+    Route::get('/koen/list/csv', [KoenListController::class, 'csv'])
         ->name('koen.list.csv');
 
 

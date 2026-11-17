@@ -147,7 +147,182 @@ class KoenListController extends Controller
     }
     public function csv()
     {
+        // 有効な講演フォーム項目を取得
+        $headers = KoenParticipantForm::query()
+            ->where('status', 1)
+            ->where('name', 'like', 'add_column_%')
+            ->orderBy('sort_order')
+            ->get()
+            ->map(function ($item) {
+                return preg_replace(
+                    '/\[[^\]]*\]/u',
+                    '',
+                    $item->label_ja ?? ''
+                );
+            })
+            ->all();
 
+        $labels = SankaFormItem::where('status', 1)
+            ->whereIn('name', [
+                'reception_number',
+                'title1',
+                'title3',
+                'title13',
+                'title18',
+            ])
+            ->pluck('label_ja', 'name')
+            ->map(fn ($label) => trim(preg_replace('/\[[^\]]*\]/u', '', $label)));
+
+        $settingsLabels = Setting::whereIn('type', [
+            'koennumber',
+            'sankanumber',
+        ])->pluck('name_ja', 'type');
+
+        $authorLabels = KoenParticipantAuthorOption::where('status', 1)
+            ->whereIn('type', [
+                'author_count',
+                'author_name',
+                'author_contact',
+                'author_speak',
+                'author_name_count',
+                'author_number',
+                'author_kikan',
+                'author_ryaku',
+                'author_english',
+                'author_speak_ja',
+                'author_speak_en',
+                'author_connect_number',
+                'author_other',
+            ])
+            ->pluck('note_ja', 'type')
+            ->map(fn ($label) => trim(
+                preg_replace('/\[[^\]]*\]|\([^)]*\)|※.*/us', '', strip_tags($label))
+            ));
+
+        $headers = array_merge([
+            $labels[ 'reception_number' ],
+            $authorLabels[ 'author_name' ],
+            $authorLabels[ 'author_contact' ],
+            $settingsLabels[ 'koennumber' ],
+            $settingsLabels[ 'sankanumber' ],
+            $labels[ 'title1' ],
+            $labels[ 'title3' ],
+            $labels[ 'title13' ],
+
+        ], $headers);
+
+        $headers[] = $labels[ 'title18' ];
+        $headers[] = $authorLabels[ 'author_count' ];
+        for ($i = 1; $i <= 10; $i++) {
+            $headers[] = $authorLabels[ 'author_kikan' ]."(大学/勤務先){$i}";
+            $headers[] = $authorLabels[ 'author_kikan' ]."(学部/部署){$i}";
+            $headers[] = $authorLabels[ 'author_ryaku' ]."{$i}";
+            $headers[] = $authorLabels[ 'author_english' ]."(大学/勤務先){$i}";
+            $headers[] = $authorLabels[ 'author_english' ]."(学部/部署){$i}";
+        }
+
+        $headers[] = $authorLabels[ 'author_name_count' ];
+
+        for ($i = 1; $i <= 10; $i++) {
+            $headers[] = $authorLabels[ 'author_speak_ja' ]."(姓){$i}";
+            $headers[] = $authorLabels[ 'author_speak_ja' ]."(名){$i}";
+            $headers[] = $authorLabels[ 'author_speak_en' ]."(姓){$i}";
+            $headers[] = $authorLabels[ 'author_speak_en' ]."(名){$i}";
+            $headers[] = $authorLabels[ 'author_connect_number' ]."{$i}";
+        }
+
+        $headers[] = $authorLabels[ 'author_other' ];
+
+        $participants = KoenParticipant::with([
+            'participant',
+            'authors' => fn ($query) => $query->whereNull('deleted_at'),
+            'affiliations' => fn ($query) => $query
+                ->whereNull('deleted_at')
+                ->orderBy('affiliation_number'),
+        ])->orderBy('id')->get();
+
+        $items = KoenParticipantForm::query()
+            ->where('status', 1)
+            ->where('name', 'like', 'add_column\_%')
+            ->with(['options' => fn ($query) => $query->where('status', 1)])
+            ->orderBy('sort_order')
+            ->get();
+
+        return response()->streamDownload(function () use ($headers, $participants, $items) {
+            $stream = fopen('php://output', 'w');
+
+            // Excelでの文字化け対策
+            fwrite($stream, "\xEF\xBB\xBF");
+            fputcsv($stream, $headers);
+
+            foreach ($participants as $participant) {
+                $presenter = $participant->authors->firstWhere('is_presenter', 1);
+                $awardContact = $participant->authors->firstWhere('is_award_contact', 1);
+
+                $row = [
+                    $participant->announcenumber,
+                    trim(($presenter?->family_name_ja ?? '') . ' ' . ($presenter?->given_name_ja ?? '')),
+                    trim(($awardContact?->family_name_ja ?? '') . ' ' . ($awardContact?->given_name_ja ?? '')),
+                    $participant->koen_number,
+                    $participant->participant?->reception_number ?? '',
+                    trim(
+                        ($participant->participant?->add_column_1 ?? '') . ' ' .
+                        ($participant->participant?->add_column_2 ?? '')
+                    ),
+                    trim(
+                        ($participant->participant?->add_column_3 ?? '') . ' ' .
+                        ($participant->participant?->add_column_4 ?? '')
+                    ),
+                    $participant->participant?->add_column_13 ?? '',
+
+                ];
+                foreach ($items as $item) {
+                    $value = $participant->{$item->name} ?? '';
+                    $option = $item->options->firstWhere('value', (string) $value);
+                    $row[] = $option?->label_ja ?? $value;
+                }
+                // 備考
+                $row[] = $participant->participant?->add_column_18 ?? '';
+
+                $affiliations = $participant->affiliations->keyBy('affiliation_number');
+
+                // 所属機関総数
+                $row[] = $affiliations->count();
+
+                for ($i = 1; $i <= 10; $i++) {
+                    $affiliation = $affiliations->get($i);
+
+                    $row[] = $affiliation?->organization ?? '';
+                    $row[] = $affiliation?->department ?? '';
+                    $row[] = $affiliation?->short_name ?? '';
+                    $row[] = $affiliation?->english ?? '';
+                    $row[] = $affiliation?->english_short ?? '';
+                }
+
+                $authors = $participant->authors->keyBy('author_number');
+
+                // 著者総数
+                $row[] = $authors->count();
+
+                for ($i = 1; $i <= 10; $i++) {
+                    $author = $authors->get($i);
+
+                    $row[] = $author?->family_name_ja ?? '';
+                    $row[] = $author?->given_name_ja ?? '';
+                    $row[] = $author?->family_name_en ?? '';
+                    $row[] = $author?->given_name_en ?? '';
+                    $row[] = $author?->affiliation_numbers ?? '';
+                }
+                // 備考演題
+                $row[] = $participant->othertext;
+
+                fputcsv($stream, $row);
+            }
+
+            fclose($stream);
+        }, 'endai_'.date('Ymdhis').'.csv', [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
 
 
@@ -421,39 +596,40 @@ class KoenListController extends Controller
         SankaFormService $sankaFormService,
         ?int $id = null
     ) {
+        $form = [];
+        if ($id !== null) {
+            $koenParticipant = KoenParticipant::with('participant')->findOrFail($id);
 
-        $koenParticipant = KoenParticipant::with('participant')->findOrFail($id);
+            $form = $koenParticipant->toArray();
 
-        $form = $koenParticipant->toArray();
+            $form['authors'] = KoenParticipantAuthor::where('koen_participant_id', $id)
+                ->whereNull('deleted_at')
+                ->orderBy('author_number')
+                ->get()
+                ->keyBy('author_number')
+                ->toArray();
 
-        $form['authors'] = KoenParticipantAuthor::where('koen_participant_id', $id)
-            ->whereNull('deleted_at')
-            ->orderBy('author_number')
-            ->get()
-            ->keyBy('author_number')
-            ->toArray();
+            $authors = collect($form['authors']);
 
-        $authors = collect($form['authors']);
+            $form['presenter_index'] = $authors
+                ->firstWhere('is_presenter', 1)['author_number'] ?? 1;
 
-        $form['presenter_index'] = $authors
-            ->firstWhere('is_presenter', 1)['author_number'] ?? 1;
+            $form['award_contact_index'] = $authors
+                ->firstWhere('is_award_contact', 1)['author_number'] ?? 0;
 
-        $form['award_contact_index'] = $authors
-            ->firstWhere('is_award_contact', 1)['author_number'] ?? 0;
+            $form['affiliations'] = KoenParticipantAffiliation::where('koen_participant_id', $id)
+                ->whereNull('deleted_at')
+                ->orderBy('affiliation_number')
+                ->get()
+                ->keyBy('affiliation_number')
+                ->toArray();
 
-        $form['affiliations'] = KoenParticipantAffiliation::where('koen_participant_id', $id)
-            ->whereNull('deleted_at')
-            ->orderBy('affiliation_number')
-            ->get()
-            ->keyBy('affiliation_number')
-            ->toArray();
-
-        $form['reception_number'] = substr(
-            $koenParticipant->participant->reception_number,
-            1,
-            4
-        );
-
+            $form['reception_number'] = substr(
+                $koenParticipant->participant->reception_number,
+                1,
+                4
+            );
+        }
         $code = Setting::get()->keyBy('type');
         // 演題登録画面表示用入力フォーム
         $endai = $sankaFormService->formatLabels(
