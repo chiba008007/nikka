@@ -25,7 +25,11 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrapFour();
         //
         Event::listen(BuildingMenu::class, function (BuildingMenu $event) {
-
+            $event->menu->add([
+                'text'  => __('sanka.title.dashboard'),
+                'route' => 'dashboard',
+                'icon'  => 'fas fa-fw fa-share',
+            ]);
             // dashboard
             if (request()->routeIs('dashboard', 'dashboard.*', 'home.*')) {
 
@@ -54,17 +58,14 @@ class AppServiceProvider extends ServiceProvider
 
             }
             // 参加管理画面
+
             if (request()->routeIs('sanka.*')) {
 
                 // $event->menu->add([
                 //     'header' =>  __('sanka.header.list'),
                 // ]);
 
-                $event->menu->add([
-                    'text'  => __('sanka.title.dashboard'),
-                    'route' => 'dashboard',
-                    'icon'  => 'fas fa-fw fa-share',
-                ]);
+
                 $event->menu->add([
                     'text'  => __('sanka.title.list'),
                     'route' => 'sanka.list.index',
@@ -88,7 +89,7 @@ class AppServiceProvider extends ServiceProvider
                 ]);
                 $event->menu->add([
                     'text'  => __('sanka.title.mailedit'),
-                    'route'   => 'home.list.mail',
+                    'url'  => route('home.list.mail', ['type' => 'PARTICIPATION_APPLICATION']),
                     'icon'  => 'fas fa-fw fa-envelope',
                 ]);
 
@@ -142,9 +143,19 @@ class AppServiceProvider extends ServiceProvider
                     'icon'  => 'fas fa-fw fa-id-card',
                 ]);
                 $event->menu->add([
+                    'text'  => __('sanka.title.history'),
+                    'route'   => 'koen.list.history',
+                    'icon'  => 'fas fa-fw fa-history',
+                ]);
+                $event->menu->add([
                     'text'  => 'CSVダウンロード',
                     'route' => 'koen.list.csv',
                     'icon'  => 'fas fa-fw fa-download',
+                ]);
+                $event->menu->add([
+                    'text'  => __('sanka.title.mailedit'),
+                    'url'   =>  route('home.list.mail', ['type' => 'PRESENTATION_APPLICATION']),
+                    'icon'  => 'fas fa-fw fa-envelope',
                 ]);
                 $event->menu->add([
                     'text'  => __('koen.title.editform'),

@@ -15,7 +15,7 @@
 
           <form
               method="POST"
-              action="{{ route('home.list.mail.update') }}"
+              action="{{ route('home.list.mail.update', ['type' => $type]) }}"
             >
               @csrf
 

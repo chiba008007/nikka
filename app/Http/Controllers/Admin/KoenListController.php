@@ -802,133 +802,136 @@ class KoenListController extends Controller
             ], $attributes)
         );
 
+        try {
+            $isUpdate = DB::transaction(function () use (
+                $request,
+                $participantId,
+                $items,
+                $uploadService
+            ) {
+                DB::statement('SET @koen_operation_id = UUID()');
+                // 講演番号の設定を取得
+                $codes = $this->getKoenCodeSettings();
 
-        $isUpdate = DB::transaction(function () use (
-            $request,
-            $participantId,
-            $items,
-            $uploadService
-        ) {
-            // 講演番号の設定を取得
-            $codes = $this->getKoenCodeSettings();
+                $prefix = $codes['koencode1'];
+                $suffix = $codes['koencode2'] . '-' . $codes['koencode3'];
 
-            $prefix = $codes['koencode1'];
-            $suffix = $codes['koencode2'] . '-' . $codes['koencode3'];
+                // 最新の講演番号を取得
+                $lastNumber = DB::table('koen_participants')
+                    ->where('koen_number', 'like', "{$prefix}%-{$suffix}")
+                    ->orderByDesc('id')
+                    ->value('koen_number');
 
-            // 最新の講演番号を取得
-            $lastNumber = DB::table('koen_participants')
-                ->where('koen_number', 'like', "{$prefix}%-{$suffix}")
-                ->orderByDesc('id')
-                ->value('koen_number');
+                $serial = 1;
 
-            $serial = 1;
-
-            if ($lastNumber !== null) {
-                $head = explode('-', $lastNumber, 2)[0];
-                $serial = (int) substr($head, strlen($prefix)) + 1;
-            }
-
-            $koenNumber = $prefix
-                . str_pad((string) $serial, 4, '0', STR_PAD_LEFT)
-                . '-' . $suffix;
-
-            $koen = KoenParticipant::firstOrNew([
-                'participant_id' => $participantId,
-            ]);
-
-            $wasUpdate = $koen->exists;
-
-            if (!$koen->exists) {
-                $koen->koen_number = $koenNumber;
-            }
-            $koen->status = 1;
-
-            foreach ($items as $item) {
-                $value = $request->input($item->name);
-
-                $koen->{$item->name} = is_array($value)
-                    ? json_encode($value, JSON_UNESCAPED_UNICODE)
-                    : $value;
-            }
-
-            $koen->othertext = $request->input('othertext');
-
-            $koen->announcenumber = $request->input('announcenumber');
-            $koen->save();
-
-
-            // アップロードファイルを保存
-            for ($i = 1; $i <= 3; $i++) {
-                $field = "uploadfile{$i}";
-
-                if ($request->hasFile($field)) {
-                    $path = $request->file($field)
-                        ->store("koen/{$koen->id}", 'local');
-
-                    $koen->{$field} = $path;
+                if ($lastNumber !== null) {
+                    $head = explode('-', $lastNumber, 2)[0];
+                    $serial = (int) substr($head, strlen($prefix)) + 1;
                 }
-            }
 
-            $koen->save();
+                $koenNumber = $prefix
+                    . str_pad((string) $serial, 4, '0', STR_PAD_LEFT)
+                    . '-' . $suffix;
 
+                $koen = KoenParticipant::firstOrNew([
+                    'participant_id' => $participantId,
+                ]);
 
-            for ($i = 1; $i <= 3; $i++) {
-                $field = "uploadfile{$i}";
+                $wasUpdate = $koen->exists;
 
-                if ($request->hasFile($field)) {
-                    $koen->{$field} = $uploadService->upload(
-                        $request->file($field),
-                        "koen/upload{$i}",
-                        "{$koen->announcenumber}-{$koen->koen_number}"
-                    );
+                if (!$koen->exists) {
+                    $koen->koen_number = $koenNumber;
                 }
-            }
+                $koen->status = 1;
 
-            $koen->save();
+                foreach ($items as $item) {
+                    $value = $request->input($item->name);
 
-            // 既存の所属機関を論理削除
-            KoenParticipantAffiliation::where('koen_participant_id', $koen->id)
-                ->whereNull('deleted_at')
-                ->update(['deleted_at' => now()]);
+                    $koen->{$item->name} = is_array($value)
+                        ? json_encode($value, JSON_UNESCAPED_UNICODE)
+                        : $value;
+                }
 
-            // 既存の著者名を論理削除
-            KoenParticipantAuthor::where('koen_participant_id', $koen->id)
-                ->whereNull('deleted_at')
-                ->update(['deleted_at' => now()]);
+                $koen->othertext = $request->input('othertext');
+
+                $koen->announcenumber = $request->input('announcenumber');
+                $koen->save();
 
 
-            // 所属機関を保存
-            foreach ($request->input('affiliations', []) as $number => $row) {
-                KoenParticipantAffiliation::create([
-                    'koen_participant_id' => $koen->id,
-                    'affiliation_number' => (int) $number,
-                    'organization' => $row['organization'] ?? null,
-                    'department' => $row['department'] ?? null,
-                    'short_name' => $row['short_name'] ?? null,
-                    'english' => $row['english'] ?? null,
-                    'english_short' => $row['english_short'] ?? null,
-                ]);
-            }
+                // アップロードファイルを保存
+                for ($i = 1; $i <= 3; $i++) {
+                    $field = "uploadfile{$i}";
 
-            // 著者名を保存
-            foreach ($request->input('authors', []) as $number => $row) {
-                KoenParticipantAuthor::create([
-                    'koen_participant_id' => $koen->id,
-                    'author_number' => (int) $number,
-                    'is_presenter' => (int) $request->input('presenter_index') === (int) $number,
-                    'is_award_contact' => (int) $request->input('award_contact_index') === (int) $number,
-                    'family_name_ja' => $row['family_name_ja'] ?? null,
-                    'given_name_ja' => $row['given_name_ja'] ?? null,
-                    'given_name_en' => $row['given_name_en'] ?? null,
-                    'family_name_en' => $row['family_name_en'] ?? null,
-                    'affiliation_numbers' => $row['affiliation_numbers'] ?? null,
-                ]);
-            }
+                    if ($request->hasFile($field)) {
+                        $path = $request->file($field)
+                            ->store("koen/{$koen->id}", 'local');
 
-            return $wasUpdate;
+                        $koen->{$field} = $path;
+                    }
+                }
 
-        });
+                $koen->save();
 
+
+                for ($i = 1; $i <= 3; $i++) {
+                    $field = "uploadfile{$i}";
+
+                    if ($request->hasFile($field)) {
+                        $koen->{$field} = $uploadService->upload(
+                            $request->file($field),
+                            "koen/upload{$i}",
+                            "{$koen->announcenumber}-{$koen->koen_number}"
+                        );
+                    }
+                }
+
+                $koen->save();
+
+                // 既存の所属機関を論理削除
+                KoenParticipantAffiliation::where('koen_participant_id', $koen->id)
+                    ->whereNull('deleted_at')
+                    ->update(['deleted_at' => now()]);
+
+                // 既存の著者名を論理削除
+                KoenParticipantAuthor::where('koen_participant_id', $koen->id)
+                    ->whereNull('deleted_at')
+                    ->update(['deleted_at' => now()]);
+
+
+                // 所属機関を保存
+                foreach ($request->input('affiliations', []) as $number => $row) {
+                    KoenParticipantAffiliation::create([
+                        'koen_participant_id' => $koen->id,
+                        'affiliation_number' => (int) $number,
+                        'organization' => $row['organization'] ?? null,
+                        'department' => $row['department'] ?? null,
+                        'short_name' => $row['short_name'] ?? null,
+                        'english' => $row['english'] ?? null,
+                        'english_short' => $row['english_short'] ?? null,
+                    ]);
+                }
+
+                // 著者名を保存
+                foreach ($request->input('authors', []) as $number => $row) {
+                    KoenParticipantAuthor::create([
+                        'koen_participant_id' => $koen->id,
+                        'author_number' => (int) $number,
+                        'is_presenter' => (int) $request->input('presenter_index') === (int) $number,
+                        'is_award_contact' => (int) $request->input('award_contact_index') === (int) $number,
+                        'family_name_ja' => $row['family_name_ja'] ?? null,
+                        'given_name_ja' => $row['given_name_ja'] ?? null,
+                        'given_name_en' => $row['given_name_en'] ?? null,
+                        'family_name_en' => $row['family_name_en'] ?? null,
+                        'affiliation_numbers' => $row['affiliation_numbers'] ?? null,
+                    ]);
+                }
+
+                return $wasUpdate;
+
+            });
+        } finally {
+            DB::statement('SET @koen_operation_id = NULL');
+        }
         // ここに管理者・参加者へのメール送信処理
 
         $adminEmail = config('mail.admin_address');

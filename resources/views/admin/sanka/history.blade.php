@@ -19,6 +19,17 @@
         ・黄色背景：新規登録時の履歴<br>
         ・長い値は省略表示されます。マウスを乗せると全文を確認できます。
     </div>
+
+    <div class="mb-3">
+        <input
+            type="text"
+            id="reception-search"
+            class="form-control form-control-sm"
+            placeholder="参加受付番号で検索"
+            style="max-width: 300px;"
+        >
+    </div>
+
     <table
         id="history-table"
         class="table table-bordered table-striped"
@@ -28,33 +39,21 @@
 
             <tr>
                 <th>参加受付番号</th>
-                <th rowspan="2">操作</th>
+                <th>操作</th>
 
                 {{-- 有効なadd_columnだけ表示 --}}
                 @foreach ($historyColumns as $column)
-                    <th rowspan="2">
+                    <th>
                         {{ $column['label'] }}
                     </th>
                 @endforeach
 
-                <th rowspan="2">参加登録種別</th>
-                <th rowspan="2">懇親会参加</th>
-                <th rowspan="2">支払(参加費)</th>
-                <th rowspan="2">支払(懇親会費)</th>
-                <th rowspan="2">操作日時</th>
+                <th>参加登録種別</th>
+                <th>懇親会参加</th>
+                <th>支払(参加費)</th>
+                <th>支払(懇親会費)</th>
+                <th>操作日時</th>
             </tr>
-
-            <tr class="column-search">
-
-                <th>
-                    <input
-                        type="text"
-                        class="form-control form-control-sm reception-search"
-                        placeholder="参加受付番号"
-                    >
-                </th>
-            </tr>
-
         </thead>
 
 
@@ -316,14 +315,9 @@ $(function () {
     /*
      * 参加受付番号だけを検索
      */
-    $('.dataTables_scrollHead .reception-search')
-        .on('keyup change', function () {
-
-            table
-                .column(0)
-                .search(this.value)
-                .draw();
-        });
+    $('#reception-search').on('keyup change', function () {
+        table.column(0).search(this.value).draw();
+    });
 
     /*
      * ブラウザの高さに合わせる

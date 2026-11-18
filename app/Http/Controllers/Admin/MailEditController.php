@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\MailTemplate;
 use App\Models\SankaFormItem;
 use App\Models\KoenParticipantForm;
+use BcMath\Number;
 
 class MailEditController extends Controller
 {
@@ -15,14 +16,13 @@ class MailEditController extends Controller
      * Display a listing of the resource.
      */
 
-    public function edit(Request $request)
+    public function edit(Request $request, $type = 'PRESENTATION_APPLICATION')
     {
         // メール種別一覧を取得する
         $mailType = config('const.MAIL_TYPE');
 
         // queryがあればそれを使う
-        $selectedMailType = $request->query('mail_type');
-
+        $selectedMailType = $request->query('mail_type', $type);
         // queryがなければ一番上を使う
         if (!$selectedMailType) {
             $selectedMailType = array_key_first($mailType);
@@ -64,6 +64,7 @@ class MailEditController extends Controller
         return view(
             'admin.mailEdit.edit',
             compact(
+                'type',
                 'mailTemplate',
                 'mailType',
                 'selectedMailType',

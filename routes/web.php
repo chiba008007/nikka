@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\SankaListRegistController;
 use App\Http\Controllers\Admin\SankaListCreateController;
 use App\Http\Controllers\Admin\ParticipantController;
 use App\Http\Controllers\Admin\SankaParticipantHistoryController;
+use App\Http\Controllers\Admin\KoenParticipantHistoryController;
 use App\Http\Controllers\Admin\KoenListController;
 use App\Http\Controllers\Admin\SettingController;
 use Illuminate\Http\Request;
@@ -42,8 +43,8 @@ Route::get('/home/list', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/setting', [SettingController::class, 'index'])->name('home.list.setting');
     Route::post('/setting/edit', [SettingController::class, 'edit'])->name('home.list.setting.edit');
-    Route::get('/home/list/mail', [MailEditController::class, 'edit'])->name('home.list.mail');
-    Route::post('/home/list/mail', [MailEditController::class, 'update'])->name('home.list.mail.update');
+    Route::get('/home/list/mail/{type?}', [MailEditController::class, 'edit'])->name('home.list.mail');
+    Route::post('/home/list/mail/{type?}', [MailEditController::class, 'update'])->name('home.list.mail.update');
 
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -101,6 +102,7 @@ Route::middleware('auth')->group(function () {
 
     // 履歴
     Route::get('/sanka/list/history', [SankaParticipantHistoryController::class, 'index'])->name('sanka.list.history');
+    Route::get('/koen/list/history', [KoenParticipantHistoryController::class, 'index'])->name('koen.list.history');
 
     // Route::get('/sanka/list', [SankaController::class, 'list'])->name('sanka.list');
     // 講演一覧

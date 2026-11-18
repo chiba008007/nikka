@@ -167,6 +167,7 @@ class SankaParticipantCsvService
                 $csvHeaders[] = '懇親会参加費';
                 $csvHeaders[] = '合計';
                 $csvHeaders[] = '参加費確認';
+                $csvHeaders[] = '懇親会費確認';
                 $csvHeaders[] = '更新日';
 
                 fputcsv($stream, $csvHeaders);
@@ -328,7 +329,8 @@ class SankaParticipantCsvService
                             'participation_payment_status'
                         ]
                         ?? '';
-
+                    // 懇親会費
+                    $row[] = $values['banquet_payment_status'] ?? '';
                     /*
                      * 更新日
                      */
