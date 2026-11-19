@@ -244,7 +244,7 @@ class KoenParticipantHistoryController extends Controller
 
         $historyRows = $historyRows
             ->sortByDesc('operated_at')
-            ->take(1000)
+            ->take(3000)
             ->values();
 
         return view(

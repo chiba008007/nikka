@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\SankaParticipantHistoryController;
 use App\Http\Controllers\Admin\KoenParticipantHistoryController;
 use App\Http\Controllers\Admin\KoenListController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\TopController;
 use Illuminate\Http\Request;
 
 /*
@@ -28,6 +29,10 @@ use Illuminate\Http\Request;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// 公開画面
+Route::get('/top', [TopController::class, 'index'])->name('top');
+
 
 Route::get('/dashboard', function () {
     return view('dashboard');

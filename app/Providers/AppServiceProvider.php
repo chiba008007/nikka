@@ -61,11 +61,9 @@ class AppServiceProvider extends ServiceProvider
 
             if (request()->routeIs('sanka.*')) {
 
-                // $event->menu->add([
-                //     'header' =>  __('sanka.header.list'),
-                // ]);
-
-
+                $event->menu->add([
+                    'header' => '参加管理',
+                ]);
                 $event->menu->add([
                     'text'  => __('sanka.title.list'),
                     'route' => 'sanka.list.index',
