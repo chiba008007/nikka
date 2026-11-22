@@ -334,7 +334,7 @@ return [
             'topnav' => true,
         ],
         [
-            'text' => '事前参加登録のご案内編集',
+            'text' => 'トップページ編集',
             'route' => 'dashboard',
             'topnav' => true,
         ],

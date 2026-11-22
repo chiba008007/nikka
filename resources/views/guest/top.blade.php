@@ -37,7 +37,31 @@
             </div>
         </div>
     </section>
-
+    {{-- バナー --}}
+    <section class="section-white pb-2">
+        <div class="container-fluid px-4 px-md-5">
+            <div class="section-heading">
+                <span>SPONSORS</span>
+                <h2>協賛企業</h2>
+            </div>
+            <div class="row">
+                <div class="col-md-2 mb-2">
+                    <div class="info-card banner-card">
+                        <a href="リンク先URL" target="_blank" rel="noopener noreferrer">
+                            <img src="https://csjtohoku.jp/img/banner/2_R08hachinohe.png" alt="協賛企業">
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-2 mb-2">
+                    <div class="info-card banner-card">
+                        <a href="リンク先URL" target="_blank" rel="noopener noreferrer">
+                            <img src="https://csjtohoku.jp/img/banner/4-1_R08BCSJ.png" />
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
     {{-- 開催概要 --}}
     <section class="section-white">
         <div class="container-fluid px-4 px-md-5">
@@ -135,208 +159,5 @@
 @stop
 
 @section('css')
-<style>
-    .main-sidebar,
-    .main-header,
-    .main-footer,
-    .content-header {
-        display: none !important;
-    }
-
-    .content-wrapper {
-        margin-left: 0 !important;
-        min-height: 100vh !important;
-        background: #fff;
-    }
-
-    .content,
-    .content > .container-fluid {
-        padding: 0 !important;
-    }
-
-    .conference-page {
-        width: 100%;
-        color: #243247;
-        font-family: "Helvetica Neue", Arial, sans-serif;
-    }
-
-    .hero {
-        min-height: 520px;
-        display: flex;
-        align-items: center;
-        background:
-            radial-gradient(circle at 85% 20%,
-                rgba(68, 145, 196, .35), transparent 45%),
-            linear-gradient(120deg, #071c36, #123e65);
-        color: #fff;
-    }
-
-    .hero-content {
-        max-width: 850px;
-        padding: 90px 0;
-    }
-
-    .hero-label {
-        display: inline-block;
-        font-size: 13px;
-        letter-spacing: 3px;
-        color: #8ed1ef;
-        margin-bottom: 25px;
-    }
-
-    .hero h1 {
-        font-size: clamp(36px, 5vw, 64px);
-        font-weight: 700;
-        letter-spacing: 2px;
-        margin-bottom: 22px;
-    }
-
-    .hero-subtitle {
-        font-size: 20px;
-        opacity: .85;
-        margin-bottom: 32px;
-    }
-
-    .hero-info {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px 30px;
-        font-size: 17px;
-        margin-bottom: 38px;
-    }
-
-    .hero-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-
-    .hero-actions .btn {
-        min-width: 190px;
-        border-radius: 5px;
-        font-weight: 600;
-    }
-
-    .section-white,
-    .section-gray {
-        padding: 85px 0;
-    }
-
-    .section-gray {
-        background: #f3f6fa;
-    }
-
-    .section-heading {
-        margin-bottom: 38px;
-    }
-
-    .section-heading span {
-        color: #2678af;
-        font-size: 13px;
-        font-weight: 700;
-        letter-spacing: 3px;
-    }
-
-    .section-heading h2 {
-        font-size: 30px;
-        font-weight: 700;
-        margin-top: 10px;
-    }
-
-    .info-card,
-    .registration-card {
-        background: #fff;
-        border: 1px solid #e4eaf0;
-        border-radius: 10px;
-        padding: 35px;
-        height: 100%;
-        box-shadow: 0 8px 25px rgba(17, 45, 75, .04);
-    }
-
-    .info-label {
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 2px;
-        color: #2678af;
-        margin-bottom: 16px;
-    }
-
-    .info-card h3,
-    .registration-card h3 {
-        font-size: 21px;
-        font-weight: 700;
-        margin-bottom: 16px;
-    }
-
-    .info-card p,
-    .registration-card p {
-        color: #617084;
-        line-height: 1.9;
-    }
-
-    .news-list {
-        background: #fff;
-        border-radius: 10px;
-        padding: 10px 30px;
-    }
-
-    .news-item {
-        display: flex;
-        gap: 30px;
-        padding: 23px 0;
-        border-bottom: 1px solid #e9edf2;
-    }
-
-    .news-item:last-child {
-        border-bottom: none;
-    }
-
-    .news-date {
-        color: #2678af;
-        font-weight: 600;
-        white-space: nowrap;
-    }
-
-    .registration-card .btn {
-        background: #164c78;
-        border-color: #164c78;
-        padding: 10px 28px;
-    }
-
-    .conference-footer {
-        padding: 35px 20px;
-        background: #081d36;
-        color: #b9c8d7;
-        text-align: center;
-        font-size: 13px;
-    }
-
-    .conference-footer p {
-        margin: 0;
-    }
-
-    @media (max-width: 767px) {
-        .hero {
-            min-height: 450px;
-        }
-
-        .hero-content {
-            padding: 65px 0;
-        }
-
-        .hero-subtitle {
-            font-size: 16px;
-        }
-
-        .section-white,
-        .section-gray {
-            padding: 55px 0;
-        }
-
-        .news-item {
-            flex-direction: column;
-            gap: 7px;
-        }
-    }
-</style>
+    <link rel="stylesheet" href="{{ asset('css/top.css') }}">
 @stop
