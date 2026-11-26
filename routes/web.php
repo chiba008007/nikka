@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\KoenParticipantHistoryController;
 use App\Http\Controllers\Admin\KoenListController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\TopController;
+use App\Http\Controllers\EditPageController;
 use Illuminate\Http\Request;
 
 /*
@@ -162,6 +163,10 @@ Route::middleware('auth')->group(function () {
     // 要旨原稿画面
     Route::get('/koen/manual/form', [KoenListController::class, 'manualform'])->name('koen.manual.form');
     Route::post('/koen/manual/form', [KoenListController::class, 'manualformUpdate'])->name('koen.manual.form.update');
+
+    // トップページedit
+    Route::get('/edit/top', [EditPageController::class, 'top'])->name('edit.top');
+    Route::post('/edit/top/edit', [EditPageController::class, 'edit'])->name('edit.top.edit');
 
 
     Route::post('/language', function (Request $request) {

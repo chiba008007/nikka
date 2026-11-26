@@ -1,22 +1,4 @@
 
-    .main-sidebar,
-    .main-header,
-    .main-footer,
-    .content-header {
-        display: none !important;
-    }
-
-    .content-wrapper {
-        margin-left: 0 !important;
-        min-height: 100vh !important;
-        background: #fff;
-    }
-
-    .content,
-    .content > .container-fluid {
-        padding: 0 !important;
-    }
-
     .conference-page {
         width: 100%;
         color: #243247;
@@ -189,7 +171,7 @@
         white-space: nowrap;
     }
 
-    .registration-card .btn {
+    .registration-card .button {
         background: #164c78;
         border-color: #164c78;
         padding: 10px 28px;

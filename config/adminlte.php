@@ -335,7 +335,7 @@ return [
         ],
         [
             'text' => 'トップページ編集',
-            'route' => 'dashboard',
+            'route' => 'edit.top',
             'topnav' => true,
         ],
         [
