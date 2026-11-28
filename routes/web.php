@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\KoenListController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\TopController;
 use App\Http\Controllers\EditPageController;
+use App\Http\Controllers\BannerController;
 use Illuminate\Http\Request;
 
 /*
@@ -168,6 +169,27 @@ Route::middleware('auth')->group(function () {
     Route::get('/edit/top', [EditPageController::class, 'top'])->name('edit.top');
     Route::post('/edit/top/edit', [EditPageController::class, 'edit'])->name('edit.top.edit');
 
+    Route::prefix('edit/top/banner')
+        ->name('edit.top.banner.')
+        ->group(function () {
+            Route::get('/', [BannerController::class, 'index'])
+                ->name('index');
+
+            Route::get('/create', [BannerController::class, 'create'])
+            ->name('create');
+
+            Route::post('/store', [BannerController::class, 'store'])
+                ->name('store');
+
+            Route::get('/{id}/edit', [BannerController::class, 'edit'])
+            ->name('edit');
+
+            Route::put('/{id}', [BannerController::class, 'update'])
+                ->name('update');
+
+            Route::delete('/{id}', [BannerController::class, 'destroy'])
+                ->name('destroy');
+        });
 
     Route::post('/language', function (Request $request) {
         // 選択した言語をセッションへ保存する

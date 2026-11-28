@@ -1,6 +1,7 @@
 @props([
   'isAdmin' => false,
-  'pageTops' => collect()
+  'pageTops' => collect(),
+  'banners' => collect(),
   ])
 {{-- メインビジュアル --}}
 <style>
@@ -48,20 +49,22 @@
             <h2 id="t-display8">{{ $pageTops[7]->note ?? '' }}</h2>
         </div>
         <div class="row">
-            <div class="col-6 col-md-2 mb-2">
-                <div class="info-card banner-card">
-                    <a href="リンク先URL" target="_blank" rel="noopener noreferrer">
-                        <img src="https://csjtohoku.jp/img/banner/2_R08hachinohe.png" alt="協賛企業">
-                    </a>
+            @foreach ($banners as $banner)
+                <div class="col-6 col-md-2 mb-2">
+                    <div class="info-card banner-card">
+                        @if ($banner->url)
+                            <a href="{{ $banner->url }}"
+                            target="_blank" rel="noopener noreferrer">
+                                <img src="{{ asset('storage/' . $banner->image) }}"
+                                    alt="協賛企業">
+                            </a>
+                        @else
+                            <img src="{{ asset('storage/' . $banner->image) }}"
+                                alt="協賛企業">
+                        @endif
+                    </div>
                 </div>
-            </div>
-            <div class="col-6 col-md-2 mb-2">
-                <div class="info-card banner-card">
-                    <a href="リンク先URL" target="_blank" rel="noopener noreferrer">
-                        <img src="https://csjtohoku.jp/img/banner/4-1_R08BCSJ.png" />
-                    </a>
-                </div>
-            </div>
+            @endforeach
         </div>
     </div>
 </section>

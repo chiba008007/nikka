@@ -300,12 +300,12 @@ return [
     // AdminLTE menu は config ベースのため固定文言を使用
     'menu' => [
         // Navbar items:
-        [
-            'type' => 'navbar-search',
-            'text' => 'search',
-            'topnav_right' => true,
+        // [
+        //     'type' => 'navbar-search',
+        //     'text' => 'search',
+        //     'topnav_right' => true,
 
-        ],
+        // ],
         [
             'type' => 'fullscreen-widget',
             'topnav_right' => true,
@@ -334,7 +334,7 @@ return [
             'topnav' => true,
         ],
         [
-            'text' => 'トップページ編集',
+            'text' => '事前参加登録のご案内編集',
             'route' => 'edit.top',
             'topnav' => true,
         ],

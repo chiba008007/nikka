@@ -3,7 +3,7 @@
 @section('title', __('sanka.title.dashboard'))
 @section('plugins.Summernote', true)
 @section('content_header')
-    <p class="h4">トップページ編集</p>
+    <p class="h4">事前参加登録のご案内編集</p>
 @stop
 
 @section('css')
@@ -13,7 +13,7 @@
 @section('content')
 
 <div class="conference-page">
-<x-top.hero :is-admin="true" :pageTops=$pageTops />
+<x-top.hero :is-admin="true" :pageTops=$pageTops :banners="$banners"/>
 </div>
 
 @stop

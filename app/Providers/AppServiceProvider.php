@@ -202,6 +202,30 @@ class AppServiceProvider extends ServiceProvider
                         ],
                     ]
                 ]);
+            } elseif (request()->routeIs('edit.top', 'edit.top.*')) {
+
+                $event->menu->add([
+                    'text'  => __('事前参加登録のご案内編集'),
+                    'url'   =>  route('edit.top'),
+                    'icon'  => 'fas fa-fw fa-file',
+                ]);
+                $event->menu->add([
+                    'text'  => __('バナー広告登録'),
+                    'route' => 'edit.top.banner.index',
+                    'icon'  => 'fas fa-fw fa-file',
+                    'submenu' => [
+                        [
+                            'text'  => '一覧',
+                            'route' => 'edit.top.banner.index',
+                            'icon'  => 'far fa-fw fa-circle',
+                        ],
+                        [
+                            'text'  => '新規登録',
+                            'route' => 'edit.top.banner.create',
+                            'icon'  => 'far fa-fw fa-circle',
+                        ],
+                    ]
+                ]);
             }
         });
     }

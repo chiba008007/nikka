@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\PageTop;
+use App\Models\Banner;
 
 class EditPageController extends Controller
 {
@@ -12,7 +13,12 @@ class EditPageController extends Controller
     {
 
         $pageTops = PageTop::all();
-        return view('admin.edit.top', compact('pageTops'));
+        $banners = Banner::where('status', 1)
+            ->orderBy('sort')
+            ->orderBy('id')
+            ->get();
+
+        return view('admin.edit.top', compact('pageTops', 'banners'));
     }
 
     public function edit(Request $request)

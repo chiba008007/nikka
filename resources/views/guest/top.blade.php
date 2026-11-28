@@ -8,7 +8,7 @@
 
 @section('content')
 <div class="conference-page">
-<x-top.hero :is-admin="false" :pageTops=$pageTops />
+<x-top.hero :is-admin="false" :pageTops=$pageTops :banners="$banners" />
 </div>
 @stop
 
