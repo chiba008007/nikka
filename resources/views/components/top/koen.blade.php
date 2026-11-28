@@ -172,7 +172,5 @@
       </div>
     </div>
 </section>
+<x-top.footer />
 
-<footer class="conference-footer">
-    <p>© 2026 〇〇学会 All Rights Reserved.</p>
-</footer>
