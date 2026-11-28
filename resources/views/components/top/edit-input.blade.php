@@ -9,7 +9,7 @@
     <div class="d-flex">
         <input
             type="text"
-            value="{{ $pageTops[$id - 1]->note ?? '' }}"
+            value="{{ $pageTops->firstWhere('num', $id)->note ?? '' }}"
             class="form-control {{ $width }}"
             id="edit-{{ $id }}"
         />

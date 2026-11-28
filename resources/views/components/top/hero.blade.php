@@ -33,8 +33,8 @@
               <x-top.edit-input :id="6" :page-tops="$pageTops" :is-admin="$isAdmin"  />
             </div>
             <div class="hero-actions">
-                <a href="#" class="btn btn-light btn-lg" id="t-display5">{{ $pageTops[4]->note ?? '' }}</a>
-                <a href="#" class="btn btn-outline-light btn-lg" id="t-display6">{{ $pageTops[5]->note ?? '' }}</a>
+                <a href="javascript:void(0)" class="btn btn-light btn-lg" id="t-display5">{{ $pageTops[4]->note ?? '' }}</a>
+                <a href="{{ url('/top/koen') }}" class="btn btn-outline-light btn-lg" id="t-display6">{{ $pageTops[5]->note ?? '' }}</a>
             </div>
         </div>
     </div>
@@ -48,24 +48,7 @@
             <span id="t-display7">{{ $pageTops[6]->note ?? '' }}</span>
             <h2 id="t-display8">{{ $pageTops[7]->note ?? '' }}</h2>
         </div>
-        <div class="row">
-            @foreach ($banners as $banner)
-                <div class="col-6 col-md-2 mb-2">
-                    <div class="info-card banner-card">
-                        @if ($banner->url)
-                            <a href="{{ $banner->url }}"
-                            target="_blank" rel="noopener noreferrer">
-                                <img src="{{ asset('storage/' . $banner->image) }}"
-                                    alt="協賛企業">
-                            </a>
-                        @else
-                            <img src="{{ asset('storage/' . $banner->image) }}"
-                                alt="協賛企業">
-                        @endif
-                    </div>
-                </div>
-            @endforeach
-        </div>
+        <x-top.bunner :is-admin="false" :pageTops=$pageTops :banners="$banners" />
     </div>
 </section>
     {{-- お知らせ --}}

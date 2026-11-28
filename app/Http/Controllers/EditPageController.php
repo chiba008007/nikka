@@ -12,7 +12,7 @@ class EditPageController extends Controller
     public function top()
     {
 
-        $pageTops = PageTop::all();
+        $pageTops = PageTop::whereBetween('num', [1, 100])->get();
         $banners = Banner::where('status', 1)
             ->orderBy('sort')
             ->orderBy('id')
@@ -24,17 +24,29 @@ class EditPageController extends Controller
     public function edit(Request $request)
     {
         $validated = $request->validate([
-            'num' => 'required|integer|exists:page_top,id',
+            'num' => 'required|integer|exists:page_top,num',
             'note' => 'required|string',
         ]);
 
-        $pageTop = PageTop::findOrFail($validated['num']);
+        $pageTop = PageTop::where('num', $validated['num'])->firstOrFail();
 
         $pageTop->update([
             'note' => $validated['note'],
         ]);
 
         return response()->json(['success' => true]);
+    }
+
+    public function koen()
+    {
+
+        $pageTops = PageTop::where('num', '>=', 101)->get()->keyBy('num');
+        $banners = Banner::where('status', 1)
+            ->orderBy('sort')
+            ->orderBy('id')
+            ->get();
+
+        return view('admin.edit.topkoen', compact('pageTops', 'banners'));
     }
 
 }

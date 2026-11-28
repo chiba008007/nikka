@@ -210,9 +210,14 @@ class AppServiceProvider extends ServiceProvider
                     'icon'  => 'fas fa-fw fa-file',
                 ]);
                 $event->menu->add([
+                    'text'  => __('発表申込のご案内編集'),
+                    'url'   =>  route('edit.top.koen'),
+                    'icon'  => 'fas fa-fw fa-volume-up',
+                ]);
+                $event->menu->add([
                     'text'  => __('バナー広告登録'),
                     'route' => 'edit.top.banner.index',
-                    'icon'  => 'fas fa-fw fa-file',
+                    'icon'  => 'fas fa-fw fa-list-ol',
                     'submenu' => [
                         [
                             'text'  => '一覧',

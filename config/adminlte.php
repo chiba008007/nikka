@@ -340,7 +340,7 @@ return [
         ],
         [
             'text' => '発表申込のご案内編集',
-            'route' => 'dashboard',
+            'route' => 'edit.top.koen',
             'topnav' => true,
         ],
         // [

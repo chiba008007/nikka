@@ -34,6 +34,7 @@ Route::get('/', function () {
 
 // 公開画面
 Route::get('/top', [TopController::class, 'index'])->name('top');
+Route::get('/top/koen', [TopController::class, 'koen'])->name('top.koen');
 
 
 Route::get('/dashboard', function () {
@@ -168,6 +169,10 @@ Route::middleware('auth')->group(function () {
     // トップページedit
     Route::get('/edit/top', [EditPageController::class, 'top'])->name('edit.top');
     Route::post('/edit/top/edit', [EditPageController::class, 'edit'])->name('edit.top.edit');
+
+    Route::get('/edit/top/koen', [EditPageController::class, 'koen'])->name('edit.top.koen');
+    Route::post('/edit/top/koen/edit', [EditPageController::class, 'koenedit'])->name('edit.top.koen.edit');
+
 
     Route::prefix('edit/top/banner')
         ->name('edit.top.banner.')

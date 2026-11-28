@@ -1,4 +1,5 @@
 $(function () {
+
     // 説明文をリッチテキストエディタにする
     $('.description').summernote({
         height: 250,

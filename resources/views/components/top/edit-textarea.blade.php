@@ -12,7 +12,7 @@
             rows="{{ $rows }}"
             class="form-control {{ $editorClass }} w-100"
             id="edit-{{ $id }}"
-        >{{ $pageTops[$id - 1]->note ?? '' }}</textarea>
+        >{{ $pageTops[$id]->note ?? '' }}</textarea>
         <button type="button"
                 class="btn btn-warning btn-sm editbtn"
                 id="t-{{ $id }}">編集</button>
